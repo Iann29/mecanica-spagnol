@@ -48,11 +48,11 @@ export function CartButton({
       )}>
         {showText ? (
           <div className="flex items-center gap-2">
-            <ShoppingCart className="h-4 w-4" />
+            <ShoppingCart className="h-6 w-6" />
             <span>Carrinho</span>
           </div>
         ) : (
-          <ShoppingCart className="h-5 w-5" />
+          <ShoppingCart className="h-6 w-6" />
         )}
       </div>
       
@@ -60,7 +60,7 @@ export function CartButton({
       {totalItems > 0 && (
         <Badge 
           className={cn(
-            'absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center',
+            'absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center',
             'bg-primary text-primary-foreground',
             'transition-all duration-200',
             isAnimating && 'scale-110'
@@ -77,31 +77,26 @@ export function CartButton({
   // If onClick is provided, render as button
   if (onClick) {
     return (
-      <Button
-        variant={variant}
-        size={size}
+      <button
         onClick={handleClick}
-        className={cn('relative', className)}
+        className={cn('relative p-2 text-[#0252A7] hover:text-[#0252A7]/80 hover:scale-110 hover:rotate-[5deg] transition-all duration-200 cursor-pointer', className)}
         aria-label={`Carrinho com ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`}
       >
         {buttonContent}
-      </Button>
+      </button>
     );
   }
 
   // Otherwise render as link
   return (
-    <Button
-      variant={variant}
-      size={size}
-      className={cn('relative', className)}
-      asChild
+    <Link 
+      href={href} 
+      onClick={handleClick}
+      className={cn('relative p-2 text-[#0252A7] hover:text-[#0252A7]/80 hover:scale-110 hover:rotate-[5deg] transition-all duration-200 cursor-pointer', className)}
       aria-label={`Carrinho com ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`}
     >
-      <Link href={href} onClick={handleClick}>
-        {buttonContent}
-      </Link>
-    </Button>
+      {buttonContent}
+    </Link>
   );
 }
 

@@ -30,8 +30,13 @@ export const mainNav: NavItem[] = [
     description: 'Entre em contato conosco',
   },
   {
+    title: 'Blog',
+    href: '/blog',
+    description: 'Notícias e dicas',
+  },
+  {
     title: 'Loja',
-    href: '/loja',
+    href: '/produtos',
     description: 'Nossos produtos',
   },
 ];

@@ -47,28 +47,28 @@ export function UserMenu() {
 
   if (loading) {
     return (
-      <Button variant="ghost" size="icon" disabled>
-        <User className="h-5 w-5 animate-pulse" />
+      <button className="p-2 text-muted-foreground animate-pulse" disabled>
+        <User className="h-6 w-6" />
         <span className="sr-only">Carregando...</span>
-      </Button>
+      </button>
     );
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <button className="relative p-2 text-[#0252A7] hover:text-[#0252A7]/80 hover:scale-110 hover:rotate-[5deg] transition-all duration-200 cursor-pointer group">
           {user ? (
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+            <Avatar className="h-6 w-6 ring-2 ring-transparent group-hover:ring-[#0252A7] transition-all">
+              <AvatarFallback className="bg-[#0252A7] text-white text-sm font-medium">
                 {getInitials(user.profile?.full_name || user.email)}
               </AvatarFallback>
             </Avatar>
           ) : (
-            <User className="h-5 w-5" />
+            <User className="h-6 w-6" />
           )}
           <span className="sr-only">Menu do usuário</span>
-        </Button>
+        </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">

@@ -1,57 +1,62 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, Search } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/layout/user-menu';
 import { MobileMenu } from '@/components/layout/mobile-menu';
 import { CartButton } from '@/components/cart/cart-button';
 import { MiniCartDrawer } from '@/components/cart/cart-drawer';
+import { SearchBar } from '@/components/layout/search-bar';
 import { mainNav } from '@/lib/config/navigation';
-import { siteConfig } from '@/lib/config/site';
 import { cn } from '@/lib/utils';
 
 export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-24 items-center gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-xl font-bold">{siteConfig.name}</span>
-            </Link>
+          <Link href="/" className="flex items-center flex-shrink-0">
+            <Image
+              src="/images/logo-spagnol.png"
+              alt="Spagnol Mecânica Agrícola"
+              width={220}
+              height={75}
+              className="h-16 w-auto"
+              priority
+            />
+          </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
-              {mainNav.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'text-sm font-medium transition-colors hover:text-primary',
-                    pathname === item.href
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  {item.title}
-                </Link>
-              ))}
-            </nav>
+          {/* Search Bar - Desktop */}
+          <div className="hidden md:block max-w-2xl ml-16">
+            <SearchBar />
           </div>
 
-          {/* Right side actions */}
-          <div className="flex items-center gap-4">
-            {/* Search Button */}
-            <Button variant="ghost" size="icon" className="hidden md:flex">
-              <Search className="h-5 w-5" />
-              <span className="sr-only">Buscar</span>
-            </Button>
+          {/* Desktop Navigation - Centered */}
+          <nav className="hidden lg:flex items-center flex-1 justify-center space-x-6">
+            {mainNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'text-base font-medium transition-colors hover:text-[#0252A7] whitespace-nowrap',
+                  pathname === item.href
+                    ? 'text-[#0252A7]'
+                    : 'text-muted-foreground'
+                )}
+              >
+                {item.title}
+              </Link>
+            ))}
+          </nav>
 
+          {/* Right side actions */}
+          <div className="flex items-center gap-3 flex-shrink-0">
             {/* Cart Drawer (Desktop) */}
             <div className="hidden md:block">
               <MiniCartDrawer />
@@ -67,12 +72,17 @@ export function Header() {
 
             {/* Mobile Menu */}
             <MobileMenu>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
+              <button className="md:hidden p-2 text-[#0252A7] hover:text-[#0252A7]/80 transition-colors">
+                <Menu className="h-6 w-6" />
                 <span className="sr-only">Menu</span>
-              </Button>
+              </button>
             </MobileMenu>
           </div>
+        </div>
+
+        {/* Search Bar - Mobile */}
+        <div className="md:hidden pb-3">
+          <SearchBar />
         </div>
       </div>
     </header>

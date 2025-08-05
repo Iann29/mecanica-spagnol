@@ -13,6 +13,11 @@ const adminRoutes = ['/admin'];
 const authRoutes = ['/login', '/cadastro'];
 
 export async function middleware(request: NextRequest) {
+  // TEMPORARIAMENTE DESABILITADO PARA DESENVOLVIMENTO DO FRONT-END
+  // Remova este return quando configurar as variáveis do Supabase
+  return NextResponse.next();
+  
+  /* CÓDIGO ORIGINAL - DESCOMENTE QUANDO CONFIGURAR O SUPABASE
   const pathname = request.nextUrl.pathname;
   
   // Atualizar sessão primeiro
@@ -81,6 +86,7 @@ export async function middleware(request: NextRequest) {
   }
 
   return response;
+  */
 }
 
 export const config = {

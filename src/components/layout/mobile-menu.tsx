@@ -4,7 +4,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -15,6 +15,7 @@ import { siteConfig } from '@/lib/config/site';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useCartStore } from '@/store/cart';
 
 interface MobileMenuProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ export function MobileMenu({ children }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { user, isAdmin, signOut, loading } = useAuthContext();
+  const totalItems = useCartStore((state) => state.getTotalItems());
 
   const handleSignOut = async () => {
     try {
@@ -59,13 +61,27 @@ export function MobileMenu({ children }: MobileMenuProps) {
       <SheetContent side="left" className="w-[300px] p-0">
         <div className="flex flex-col h-full">
           {/* Header do menu */}
-          <div className="p-6 border-b">
+          <div className="p-6 border-b flex items-center justify-between">
             <Link 
               href="/" 
               className="text-lg font-bold"
               onClick={() => setIsOpen(false)}
             >
               {siteConfig.name}
+            </Link>
+            {/* Carrinho no header do menu */}
+            <Link
+              href="/carrinho"
+              className="relative p-2 hover:bg-gray-100 rounded-md transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <ShoppingBag className="h-6 w-6 text-[#0252A7]" />
+              {/* Badge com quantidade de items */}
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#EF1923] text-white text-xs flex items-center justify-center font-medium">
+                  {totalItems}
+                </span>
+              )}
             </Link>
           </div>
 
