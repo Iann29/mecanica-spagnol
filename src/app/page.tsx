@@ -6,6 +6,9 @@ import { ArrowRight, Truck, Shield, ShoppingBag, MessageCircle, ChevronLeft, Che
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Lenis from 'lenis';
+import { motion } from 'framer-motion';
+
+// Animações simples - sem variants complexas
 
 export default function Home() {
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -47,8 +50,13 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8 sm:gap-16">
       {/* Hero Banner Section */}
-      <section className="container mx-auto px-3 sm:px-4 pt-4 sm:pt-6">
-        <div 
+      <motion.section 
+        className="container mx-auto px-3 sm:px-4 pt-4 sm:pt-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+          <div 
           className="relative rounded-sm overflow-hidden min-h-[350px] sm:min-h-[500px] flex items-end sm:items-end bg-white sm:bg-transparent"
           style={{
             backgroundImage: 'none',
@@ -72,8 +80,8 @@ export default function Home() {
           <div className="relative pb-12 sm:pb-20 pt-8 sm:pt-12 px-6 sm:px-8 md:px-16 w-full z-10">
             <div className="flex flex-col items-start text-left gap-4 sm:gap-6 max-w-4xl">
               <h1 className="text-3xl sm:text-3xl md:text-5xl font-semibold uppercase tracking-wide text-[#151515] sm:text-white">
-                DESDE 1970 NO MERCADO DE<br />
-                MECÂNICA PESADA
+                <span className="text-2xl sm:text-2xl md:text-3xl font-normal">DESDE 1970</span><br />
+                REFERÊNCIA EM MECÂNICA PESADA
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 sm:text-gray-200 max-w-2xl font-normal">
                 Especialistas em linha diesel leve e pesada, e linha agrícola, com décadas de confiança e expertise.
@@ -100,56 +108,130 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Vantagens/Diferenciais */}
-      <section className="-mt-8 sm:-mt-6 pb-4">
+      <motion.section 
+        className="-mt-8 sm:-mt-6 pb-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 relative">
+          <motion.div 
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 relative"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             {/* Envio Rápido */}
-            <div className="text-center relative">
-              <Truck className="h-8 sm:h-10 w-8 sm:w-10 text-gray-600 mx-auto mb-2 sm:mb-3" />
+            <motion.div 
+              className="text-center relative"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+              >
+                <Truck className="h-8 sm:h-10 w-8 sm:w-10 text-gray-600 mx-auto mb-2 sm:mb-3" />
+              </motion.div>
               <p className="text-sm sm:text-base font-medium text-gray-700">Envio rápido</p>
               <p className="text-xs sm:text-sm text-gray-500 font-light">Para todo Brasil</p>
               {/* Divisória direita - mobile e desktop */}
               <div className="absolute right-0 top-1/2 -translate-y-1/2 h-12 sm:h-16 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
-            </div>
+            </motion.div>
 
             {/* Compra Online */}
-            <div className="text-center relative">
-              <ShoppingBag className="h-8 sm:h-10 w-8 sm:w-10 text-gray-600 mx-auto mb-2 sm:mb-3" />
+            <motion.div 
+              className="text-center relative"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.6 }}
+              >
+                <ShoppingBag className="h-8 sm:h-10 w-8 sm:w-10 text-gray-600 mx-auto mb-2 sm:mb-3" />
+              </motion.div>
               <p className="text-sm sm:text-base font-medium text-gray-700">Compre pelo site</p>
               <p className="text-xs sm:text-sm text-gray-500 font-light">E receba em casa</p>
               {/* Divisória direita - apenas desktop */}
               <div className="absolute right-0 top-1/2 -translate-y-1/2 h-12 sm:h-16 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent hidden md:block"></div>
-            </div>
+            </motion.div>
 
             {/* Qualidade e Garantia */}
-            <div className="text-center relative">
-              <Shield className="h-8 sm:h-10 w-8 sm:w-10 text-gray-600 mx-auto mb-2 sm:mb-3" />
+            <motion.div 
+              className="text-center relative"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.8 }}
+              >
+                <Shield className="h-8 sm:h-10 w-8 sm:w-10 text-gray-600 mx-auto mb-2 sm:mb-3" />
+              </motion.div>
               <p className="text-sm sm:text-base font-medium text-gray-700">Qualidade e garantia</p>
               <p className="text-xs sm:text-sm text-gray-500 font-light">Produtos certificados</p>
               {/* Divisória direita - apenas desktop */}
               <div className="absolute right-0 top-1/2 -translate-y-1/2 h-12 sm:h-16 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent hidden md:block"></div>
-            </div>
+            </motion.div>
 
             {/* Atendimento Especializado */}
-            <div className="text-center">
-              <MessageCircle className="h-8 sm:h-10 w-8 sm:w-10 text-gray-600 mx-auto mb-2 sm:mb-3" />
+            <motion.div 
+              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.4, delay: 1.0 }}
+              >
+                <MessageCircle className="h-8 sm:h-10 w-8 sm:w-10 text-gray-600 mx-auto mb-2 sm:mb-3" />
+              </motion.div>
               <p className="text-sm sm:text-base font-medium text-gray-700">Atendimento especializado</p>
               <p className="text-xs sm:text-sm text-gray-500 font-light">Equipe especializada</p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Categorias */}
-      <section className="py-4 sm:py-6 bg-transparent">
+      <motion.section 
+        className="py-4 sm:py-6 bg-transparent"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="bg-white shadow-sm p-8 sm:p-12">
-            <div className="flex flex-col gap-6 sm:gap-8 mb-8 sm:mb-12">
+          <motion.div 
+            className="bg-white shadow-sm p-8 sm:p-12"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <motion.div 
+              className="flex flex-col gap-6 sm:gap-8 mb-8 sm:mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 sm:gap-8">
-                <div className="max-w-2xl">
+                <motion.div 
+                  className="max-w-2xl"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                >
                   <h2 className="text-2xl sm:text-4xl font-bold uppercase mb-3 sm:mb-4 text-[#0252A7]">
                     BUSQUE POR CATEGORIA
                   </h2>
@@ -157,23 +239,39 @@ export default function Home() {
                   <p className="text-base sm:text-lg text-gray-600 font-medium">
                     A mais ampla variedade de peças do mercado, agora disponível online:
                   </p>
-                </div>
-                <Button 
-                  size="lg" 
-                  asChild
-                  className="bg-[#0252A7] text-white hover:bg-red-600 hover:text-white transition-colors self-start lg:self-auto hidden lg:inline-flex font-semibold"
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
                 >
-                  <Link href="/loja">
-                    Ver todos os produtos
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
+                  <Button 
+                    size="lg" 
+                    asChild
+                    className="bg-[#0252A7] text-white hover:bg-red-600 hover:text-white transition-colors self-start lg:self-auto hidden lg:inline-flex font-semibold"
+                  >
+                    <Link href="/loja">
+                      Ver todos os produtos
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
-            <Link href="/categoria/caminhonetes-a-diesel" className="group">
-              <div className="relative overflow-hidden rounded-sm transition-all aspect-[4/3] bg-white">
+            <motion.div 
+              className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.9 }}
+              >
+                <Link href="/categoria/caminhonetes-a-diesel" className="group block">
+                  <div className="relative overflow-hidden rounded-sm transition-all aspect-[4/3] bg-white">
                 <img
                   src="/images/caminhonetes-a-diesel.jpg"
                   alt="Caminhonetes a Diesel"
@@ -186,11 +284,17 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                   <span className="text-white text-base font-bold uppercase">Ver produtos</span>
                 </div>
-              </div>
-            </Link>
+                  </div>
+                </Link>
+              </motion.div>
 
-            <Link href="/categoria/caminhoes-a-diesel" className="group">
-              <div className="relative overflow-hidden rounded-sm transition-all aspect-[4/3] bg-white">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.9 }}
+              >
+                <Link href="/categoria/caminhoes-a-diesel" className="group block">
+                  <div className="relative overflow-hidden rounded-sm transition-all aspect-[4/3] bg-white">
                 <img
                   src="/images/caminhoes-a-diesel.jpg"
                   alt="Caminhões a Diesel"
@@ -203,11 +307,17 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                   <span className="text-white text-base font-bold uppercase">Ver produtos</span>
                 </div>
-              </div>
-            </Link>
+                  </div>
+                </Link>
+              </motion.div>
 
-            <Link href="/categoria/onibus" className="group">
-              <div className="relative overflow-hidden rounded-sm transition-all aspect-[4/3] bg-white">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.9 }}
+              >
+                <Link href="/categoria/onibus" className="group block">
+                  <div className="relative overflow-hidden rounded-sm transition-all aspect-[4/3] bg-white">
                 <img
                   src="/images/onibus.jpg"
                   alt="Ônibus"
@@ -220,11 +330,17 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                   <span className="text-white text-base font-bold uppercase">Ver produtos</span>
                 </div>
-              </div>
-            </Link>
+                  </div>
+                </Link>
+              </motion.div>
 
-            <Link href="/categoria/linha-agricola" className="group">
-              <div className="relative overflow-hidden rounded-sm transition-all aspect-[4/3] bg-white">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.9 }}
+              >
+                <Link href="/categoria/linha-agricola" className="group block">
+                  <div className="relative overflow-hidden rounded-sm transition-all aspect-[4/3] bg-white">
                 <img
                   src="/images/linha-agricola.png"
                   alt="Linha Agrícola"
@@ -237,12 +353,18 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                   <span className="text-white text-base font-bold uppercase">Ver produtos</span>
                 </div>
-              </div>
-            </Link>
-          </div>
+                  </div>
+                </Link>
+              </motion.div>
+            </motion.div>
           
             {/* Botão mobile - abaixo dos cards */}
-            <div className="flex justify-center mt-8 lg:hidden">
+            <motion.div 
+              className="flex justify-center mt-8 lg:hidden"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 1.2 }}
+            >
               <Button 
                 size="lg" 
                 asChild
@@ -253,23 +375,43 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Mais Procurados */}
-      <section className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
-        <div className="mb-8 sm:mb-12 text-center">
+      <motion.section 
+        className="container mx-auto px-3 sm:px-4 py-2 sm:py-3"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+      >
+        <motion.div 
+          className="mb-8 sm:mb-12 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+        >
           <h2 className="text-xl sm:text-3xl font-bold uppercase text-[#0252A7] mb-3 sm:mb-4">
             MAIS PROCURADOS
           </h2>
           <div className="w-32 sm:w-48 h-[2px] bg-gradient-to-r from-transparent via-[#0252A7] to-transparent mx-auto mb-3 sm:mb-4"></div>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+        <motion.div 
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
           {/* Produto 1 */}
-          <div className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card">
+          <motion.div 
+            className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
             <div className="aspect-[4/3] bg-[#121212] relative overflow-hidden flex items-center justify-center">
               {/* Logo timbrada de fundo */}
               <img 
@@ -301,10 +443,15 @@ export default function Home() {
                 </a>
               </Button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Produto 2 */}
-          <div className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card">
+          <motion.div 
+            className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
             <div className="aspect-[4/3] bg-[#121212] relative overflow-hidden flex items-center justify-center">
               {/* Logo timbrada de fundo */}
               <img 
@@ -336,10 +483,15 @@ export default function Home() {
                 </a>
               </Button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Produto 3 */}
-          <div className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card">
+          <motion.div 
+            className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
             <div className="aspect-[4/3] bg-[#121212] relative overflow-hidden flex items-center justify-center">
               {/* Logo timbrada de fundo */}
               <img 
@@ -371,10 +523,15 @@ export default function Home() {
                 </a>
               </Button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Produto 4 */}
-          <div className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card">
+          <motion.div 
+            className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
             <div className="aspect-[4/3] bg-[#121212] relative overflow-hidden flex items-center justify-center">
               {/* Logo timbrada de fundo */}
               <img 
@@ -406,10 +563,15 @@ export default function Home() {
                 </a>
               </Button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Produto 5 */}
-          <div className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card">
+          <motion.div 
+            className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full group/card"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
             <div className="aspect-[4/3] bg-[#121212] relative overflow-hidden flex items-center justify-center">
               {/* Logo timbrada de fundo */}
               <img 
@@ -441,10 +603,15 @@ export default function Home() {
                 </a>
               </Button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="flex justify-center mt-10">
+        <motion.div 
+          className="flex justify-center mt-10"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.8 }}
+        >
           <Button 
             size="lg" 
             asChild
@@ -455,11 +622,16 @@ export default function Home() {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
       {/* Peças Raras */}
-      <section className="bg-[#0252A7] py-12 sm:py-16 relative overflow-hidden">
+      <motion.section 
+        className="bg-[#0252A7] py-12 sm:py-16 relative overflow-hidden"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
         {/* Texture Pattern Background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -494,6 +666,7 @@ export default function Home() {
               Seleção especial para restauradores, colecionadores e apaixonados por clássicos.
             </p>
           </div>
+        </div>
 
         <div className="relative">
           {/* Seta Esquerda */}
@@ -767,12 +940,16 @@ export default function Home() {
             </div>
           </div>
         </div>
-        </div>
-      </section>
+      </motion.section>
 
 
       {/* Serviços Mecânicos Section */}
-      <section className="container mx-auto px-3 sm:px-4 mb-8 sm:mb-16 mt-12 sm:mt-16">
+      <motion.section 
+        className="container mx-auto px-3 sm:px-4 mb-8 sm:mb-16 mt-12 sm:mt-16"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
         <div className="relative rounded-sm overflow-hidden bg-[#0252A7]">
           {/* Logo timbrada */}
           <div className="absolute inset-0 flex items-center justify-start pointer-events-none">
@@ -851,10 +1028,15 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Blog Section */}
-      <section className="bg-[#151515] py-12 sm:py-16 relative overflow-hidden">
+      <motion.section 
+        className="bg-[#151515] py-12 sm:py-16 relative overflow-hidden"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
         {/* Grid Pattern Background with Gradient */}
         <div className="absolute inset-0">
           <div className="absolute inset-0" style={{
@@ -977,10 +1159,15 @@ export default function Home() {
             </Button>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* CTA e Mapa Section */}
-      <section className="container mx-auto px-3 sm:px-4 mt-8 sm:mt-16 mb-8 sm:mb-16">
+      <motion.section 
+        className="container mx-auto px-3 sm:px-4 mt-8 sm:mt-16 mb-8 sm:mb-16"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
         <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
           {/* CTA Card */}
           <div className="relative rounded-sm overflow-hidden">
@@ -1037,7 +1224,7 @@ export default function Home() {
             />
           </div>
         </div>
-      </section>
+      </motion.section>
 
     </div>
   );

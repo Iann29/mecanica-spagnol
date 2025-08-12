@@ -13,16 +13,16 @@ const adminRoutes = ['/admin'];
 const authRoutes = ['/login', '/cadastro'];
 
 export async function middleware(request: NextRequest) {
-  // TEMPORARIAMENTE DESABILITADO PARA DESENVOLVIMENTO DO FRONT-END
-  // Remova este return quando configurar as variáveis do Supabase
-  return NextResponse.next();
-  
-  /* CÓDIGO ORIGINAL - DESCOMENTE QUANDO CONFIGURAR O SUPABASE
+  // Fallback seguro: se variáveis do Supabase não estiverem definidas, não aplica auth
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next();
+  }
+
   const pathname = request.nextUrl.pathname;
-  
-  // Atualizar sessão primeiro
+
+  // Atualizar sessão primeiro (sincroniza cookies de sessão)
   const response = await updateSession(request);
-  
+
   // Criar cliente Supabase no middleware
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
   // Obter usuário atual (método seguro)
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Verificar rotas protegidas
+  // Verificar rotas
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
@@ -78,15 +78,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // TEMPORARIAMENTE DESABILITADO: Redirecionar para home se já autenticado em páginas de auth
-  // Este redirect estava causando loops e bloqueando navegação
-  // Deixar o AuthLayout lidar com isso via server-side check mais confiável
+  // Redirecionar usuários autenticados das páginas de auth (suave)
   if (isAuthRoute && user) {
+    // Evitar loops; deixar layouts tratarem quando necessário
     // return NextResponse.redirect(new URL('/', request.url));
   }
 
   return response;
-  */
 }
 
 export const config = {
