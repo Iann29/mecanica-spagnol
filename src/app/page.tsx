@@ -80,8 +80,7 @@ export default function Home() {
           <div className="relative pb-12 sm:pb-20 pt-8 sm:pt-12 px-6 sm:px-8 md:px-16 w-full z-10">
             <div className="flex flex-col items-start text-left gap-4 sm:gap-6 max-w-4xl">
               <h1 className="text-3xl sm:text-3xl md:text-5xl font-semibold uppercase tracking-wide text-[#151515] sm:text-white">
-                <span className="text-2xl sm:text-2xl md:text-3xl font-normal">DESDE 1970</span><br />
-                REFERÊNCIA EM MECÂNICA PESADA
+                REFERÊNCIA EM MECÂNICA PESADA DESDE 1970
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 sm:text-gray-200 max-w-2xl font-normal">
                 Especialistas em linha diesel leve e pesada, e linha agrícola, com décadas de confiança e expertise.
