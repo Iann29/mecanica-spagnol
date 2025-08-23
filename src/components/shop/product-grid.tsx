@@ -77,7 +77,7 @@ export function ProductGrid({
         </p>
         <Button 
           variant="outline"
-          onClick={() => window.location.href = '/produtos'}
+          onClick={() => window.location.href = '/loja'}
         >
           Ver todos os produtos
         </Button>

@@ -82,7 +82,7 @@ export default function ProductsPage() {
       }
     });
     
-    router.push(`/produtos?${newSearchParams.toString()}`);
+    router.push(`/loja?${newSearchParams.toString()}`);
   }, [router, searchParams]);
 
   // Load products
@@ -180,7 +180,7 @@ export default function ProductsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Produtos</h1>
+          <h1 className="text-3xl font-bold">Loja</h1>
           <p className="text-muted-foreground">
             Encontre as melhores peças e acessórios automotivos
           </p>

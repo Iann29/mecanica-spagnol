@@ -13,12 +13,19 @@ const adminRoutes = ['/admin'];
 const authRoutes = ['/login', '/cadastro'];
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Redirect /produtos para /loja (mantém compatibilidade)
+  if (pathname.startsWith('/produtos')) {
+    const url = request.nextUrl.clone();
+    url.pathname = url.pathname.replace('/produtos', '/loja');
+    return NextResponse.redirect(url);
+  }
+
   // Fallback seguro: se variáveis do Supabase não estiverem definidas, não aplica auth
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.next();
   }
-
-  const pathname = request.nextUrl.pathname;
 
   // Atualizar sessão primeiro (sincroniza cookies de sessão)
   const response = await updateSession(request);

@@ -90,7 +90,7 @@ export default function CartPage() {
             </p>
           </div>
           <Button asChild>
-            <Link href="/produtos">
+            <Link href="/loja">
               Continuar comprando
             </Link>
           </Button>
@@ -134,7 +134,7 @@ export default function CartPage() {
                     <div className="flex gap-4">
                       {/* Product Image */}
                       <div className="flex-shrink-0">
-                        <Link href={`/produtos/${item.product.slug}`}>
+                        <Link href={`/loja/${item.product.slug}`}>
                           <div className="w-20 h-20 relative overflow-hidden rounded-lg bg-gray-100">
                             <Image
                               src={item.product.images?.[0] || '/placeholder-product.jpg'}
@@ -151,7 +151,7 @@ export default function CartPage() {
                         <div className="flex justify-between items-start">
                           <div className="space-y-1">
                             <Link 
-                              href={`/produtos/${item.product.slug}`}
+                              href={`/loja/${item.product.slug}`}
                               className="font-medium hover:text-primary line-clamp-2"
                             >
                               {item.product.name}
@@ -333,7 +333,7 @@ export default function CartPage() {
 
             {/* Continue Shopping */}
             <Button asChild variant="outline" className="w-full">
-              <Link href="/produtos">
+              <Link href="/loja">
                 Continuar Comprando
               </Link>
             </Button>

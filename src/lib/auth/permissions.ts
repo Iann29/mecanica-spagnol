@@ -24,7 +24,7 @@ export function canAccessRoute(
   route: string
 ): boolean {
   // Rotas públicas
-  const publicRoutes = ['/', '/sobre', '/contato', '/loja', '/produtos'];
+  const publicRoutes = ['/', '/sobre', '/contato', '/loja'];
   if (publicRoutes.some(r => route.startsWith(r))) {
     return true;
   }

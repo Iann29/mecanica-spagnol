@@ -93,9 +93,9 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/produtos" className="text-gray-400 hover:text-[#0252A7] transition-colors text-sm flex items-center gap-1 group">
+                  <Link href="/loja" className="text-gray-400 hover:text-[#0252A7] transition-colors text-sm flex items-center gap-1 group">
                     <ArrowRight className="h-3 w-3 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-                    Produtos
+                    Loja
                   </Link>
                 </li>
                 <li>

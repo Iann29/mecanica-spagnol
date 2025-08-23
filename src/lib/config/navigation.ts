@@ -36,7 +36,7 @@ export const mainNav: NavItem[] = [
   },
   {
     title: 'Loja',
-    href: '/produtos',
+    href: '/loja',
     description: 'Nossos produtos',
   },
 ];

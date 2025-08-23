@@ -165,7 +165,7 @@ export default function MinhaContaPage() {
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <ShoppingCart className="h-12 w-12 text-muted-foreground mb-3" />
             <p className="text-muted-foreground">Você ainda não fez nenhum pedido</p>
-            <Link href="/produtos">
+            <Link href="/loja">
               <Button className="mt-4">
                 Explorar Produtos
               </Button>

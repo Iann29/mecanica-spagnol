@@ -52,7 +52,7 @@ export function ProductCard({ product, className, showQuickView = false }: Produ
 
   return (
     <Card className={cn('group relative overflow-hidden hover:shadow-lg transition-shadow', className)}>
-      <Link href={`/produtos/${product.slug}`}>
+      <Link href={`/loja/${product.slug}`}>
         <div className="aspect-square relative overflow-hidden bg-gray-100">
           {/* Badges */}
           <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
@@ -133,7 +133,7 @@ export function ProductCard({ product, className, showQuickView = false }: Produ
           )}
 
           {/* Product Name */}
-          <Link href={`/produtos/${product.slug}`}>
+          <Link href={`/loja/${product.slug}`}>
             <h3 className="font-semibold text-sm line-clamp-2 hover:text-primary transition-colors">
               {product.name}
             </h3>

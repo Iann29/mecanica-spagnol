@@ -181,7 +181,7 @@ function CartDrawerItem({ item, onQuantityChange, onRemove }: CartDrawerItemProp
     <div className="flex gap-3 p-3 border rounded-lg">
       {/* Product Image */}
       <div className="flex-shrink-0">
-        <Link href={`/produtos/${item.product.slug}`}>
+        <Link href={`/loja/${item.product.slug}`}>
           <div className="w-16 h-16 relative overflow-hidden rounded-md bg-gray-100">
             <Image
               src={item.product.images?.[0] || '/placeholder-product.jpg'}
@@ -198,7 +198,7 @@ function CartDrawerItem({ item, onQuantityChange, onRemove }: CartDrawerItemProp
         <div className="flex justify-between items-start">
           <div className="space-y-1">
             <Link 
-              href={`/produtos/${item.product.slug}`}
+              href={`/loja/${item.product.slug}`}
               className="font-medium text-sm hover:text-primary line-clamp-2"
             >
               {item.product.name}
@@ -274,7 +274,7 @@ function EmptyCartState() {
         </p>
       </div>
       <Button asChild>
-        <Link href="/produtos">
+        <Link href="/loja">
           Continuar comprando
         </Link>
       </Button>
@@ -340,7 +340,7 @@ export function QuickAddDrawer({ trigger, productId, onAddToCart }: QuickAddDraw
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/produtos">
+              <Link href="/loja">
                 Continuar Comprando
               </Link>
             </Button>

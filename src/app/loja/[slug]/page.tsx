@@ -189,12 +189,12 @@ export default function ProductDetailsPage() {
         <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-primary">Início</Link>
           <span>/</span>
-          <Link href="/produtos" className="hover:text-primary">Produtos</Link>
+          <Link href="/loja" className="hover:text-primary">Loja</Link>
           {product.category && (
             <>
               <span>/</span>
               <Link 
-                href={`/produtos?category=${product.category.id}`}
+                href={`/loja?category=${product.category.id}`}
                 className="hover:text-primary"
               >
                 {product.category.name}
