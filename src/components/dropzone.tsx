@@ -79,7 +79,6 @@ const DropzoneContent = ({ className }: { className?: string }) => {
 
   const handleRemoveFile = useCallback(
     (fileName: string) => {
-      console.log('🗑️ [DROPZONE] Removendo arquivo:', fileName)
       setFiles(files.filter((file) => file.name !== fileName))
     },
     [files, setFiles]
@@ -87,16 +86,7 @@ const DropzoneContent = ({ className }: { className?: string }) => {
   
   // Log apenas quando o estado mudar (não em cada render)
   useEffect(() => {
-    console.log('🎨 [DROPZONE] Estado mudou:', {
-      filesCount: files.length,
-      loading,
-      isSuccess,
-      successesCount: successes.length,
-      errorsCount: errors.length,
-      maxFiles,
-      exceedMaxFiles,
-      uploadedPathsCount: uploadedPaths?.length ?? 0
-    })
+    // noop: removido logs de debug
   }, [files.length, loading, isSuccess, successes.length, errors.length, maxFiles, exceedMaxFiles, uploadedPaths?.length])
 
   // Auto-upload: ao adicionar arquivos válidos e não estiver carregando
@@ -104,10 +94,7 @@ const DropzoneContent = ({ className }: { className?: string }) => {
     if (loading) return
     if (files.length === 0) return
     const hasEligible = files.some((f) => f.errors.length === 0 && !successes.includes(f.name))
-    if (hasEligible) {
-      console.log('⚡ [DROPZONE] Auto-upload acionado')
-      onUpload()
-    }
+    if (hasEligible) onUpload()
   }, [files, loading, successes, onUpload])
 
   // Limpar object URLs de previews ao desmontar
@@ -203,12 +190,6 @@ const DropzoneContent = ({ className }: { className?: string }) => {
           <Button
             variant="outline"
             onClick={() => {
-              console.log('🚀 [DROPZONE] Botão Upload clicado!')
-              console.log('🚀 [DROPZONE] Estado antes do upload:', { 
-                files: files.map(f => f.name),
-                hasErrors: files.some((file) => file.errors.length !== 0),
-                loading 
-              })
               onUpload()
             }}
             disabled={files.some((file) => file.errors.length !== 0) || loading}

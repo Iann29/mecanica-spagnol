@@ -307,20 +307,15 @@ export function ProductForm({ mode, productId, initialData, className }: Product
     upsert: mode === "edit", // Permitir sobrescrever arquivos ao editar
   })
   
-  // Log apenas quando o estado do upload mudar (não em cada render)
-  useEffect(() => {
-    console.log('📋 [PRODUCT-FORM] Upload state changed:', {
-      bucketName: "products",
-      path: uploadBasePath,
-      uploadState: {
-        files: upload.files.length,
-        loading: upload.loading,
-        successes: upload.successes.length,
-        errors: upload.errors.length,
-        uploadedPaths: upload.uploadedPaths?.length ?? 0
-      }
-    })
-  }, [upload.files.length, upload.loading, upload.successes.length, upload.errors.length, upload.uploadedPaths?.length, uploadBasePath])
+  // Removidos logs de debug do estado de upload
+  useEffect(() => {}, [
+    upload.files.length,
+    upload.loading,
+    upload.successes.length,
+    upload.errors.length,
+    upload.uploadedPaths?.length,
+    uploadBasePath,
+  ])
 
   // Processar novos uploads: converter paths em URLs públicas e anexar
   const lastProcessedCountRef = useRef(0)

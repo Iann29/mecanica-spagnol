@@ -111,6 +111,28 @@ export async function POST(request: Request) {
           }, { status: 400 });
         }
 
+        // Limpar arquivos do storage para cada produto
+        try {
+          const limit = 1000
+          for (const pid of ids) {
+            let offset = 0
+            while (true) {
+              const { data: objects, error: listErr } = await supabase.storage
+                .from('products')
+                .list(pid, { limit, offset })
+              if (listErr) break
+              if (!objects || objects.length === 0) break
+              const paths = objects.map((o) => `${pid}/${o.name}`)
+              const { error: rmErr } = await supabase.storage
+                .from('products')
+                .remove(paths)
+              if (rmErr) break
+              if (objects.length < limit) break
+              offset += limit
+            }
+          }
+        } catch {}
+
         result = await supabase
           .from('products')
           .delete()

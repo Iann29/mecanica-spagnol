@@ -82,10 +82,6 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
 
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[]) => {
-      console.log('📥 [UPLOAD] onDrop chamado:', {
-        acceptedFiles: acceptedFiles.length,
-        rejections: fileRejections.length
-      })
       const validFiles = acceptedFiles
         .filter((file) => !files.find((x) => x.name === file.name))
         .map((file) => {
@@ -116,23 +112,14 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   })
 
   const onUpload = useCallback(async () => {
-    console.log('🔵 [UPLOAD] Iniciando upload...')
-    console.log('🔵 [UPLOAD] Bucket:', bucketName)
-    console.log('🔵 [UPLOAD] Path:', path)
-    console.log('🔵 [UPLOAD] Files to upload:', files.map(f => f.name))
     
     setLoading(true)
 
     // Verificar autenticação
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    console.log('🔵 [UPLOAD] Session check:', { 
-      hasSession: !!session, 
-      userId: session?.user?.id,
-      sessionError 
-    })
     
     if (!session) {
-      console.error('🔴 [UPLOAD] Sem sessão ativa!')
+      // Sem sessão ativa
       toast.error('Sessão expirada. Faça login para enviar imagens.')
       setLoading(false)
       return
@@ -151,7 +138,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
 
     const filesToUpload = eligible.filter((f) => toUploadNames.has(f.name))
 
-    console.log('🔵 [UPLOAD] Files que serão enviados:', filesToUpload.map(f => f.name))
+    // prosseguir com upload
 
     const responses = await Promise.all(
       filesToUpload.map(async (file) => {
@@ -164,9 +151,6 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
         const storedName = ext ? `${uniqueBase}.${ext}` : uniqueBase
 
         const uploadPath = !!path ? `${path}/${storedName}` : storedName
-        console.log(`🔵 [UPLOAD] Enviando arquivo: ${file.name}`)
-        console.log(`🔵 [UPLOAD] Path completo: ${uploadPath}`)
-        console.log(`🔵 [UPLOAD] Tamanho do arquivo: ${file.size} bytes`)
         
         try {
           const { data, error } = await supabase.storage
@@ -176,14 +160,11 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
               upsert,
             })
           
-          console.log(`🔵 [UPLOAD] Resposta para ${file.name}:`, { data, error })
-          
           if (error) {
-            console.error(`🔴 [UPLOAD] Erro no upload de ${file.name}:`, error)
+            // erro no upload
             toast.error(`Falha ao enviar ${file.name}`)
             return { name: file.name, message: error.message }
           } else {
-            console.log(`✅ [UPLOAD] Sucesso no upload de ${file.name}`)
             if (data?.path) {
               setUploadedPaths((prev) => Array.from(new Set([...prev, data.path as string])))
             }
@@ -191,29 +172,23 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
             return { name: file.name, message: undefined }
           }
         } catch (err) {
-          console.error(`🔴 [UPLOAD] Erro inesperado no upload de ${file.name}:`, err)
+          // erro inesperado
           toast.error(`Erro ao enviar ${file.name}`)
           return { name: file.name, message: err instanceof Error ? err.message : 'Erro desconhecido' }
         }
       })
     )
 
-    console.log('🔵 [UPLOAD] Todas as respostas:', responses)
-    
     const responseErrors = responses.filter((x) => x.message !== undefined)
-    console.log('🔵 [UPLOAD] Erros encontrados:', responseErrors)
     // if there were errors previously, this function tried to upload the files again so we should clear/overwrite the existing errors.
     setErrors(responseErrors)
 
     const responseSuccesses = responses.filter((x) => x.message === undefined)
-    console.log('🔵 [UPLOAD] Sucessos:', responseSuccesses)
     
     const newSuccesses = Array.from(
       new Set([...successes, ...responseSuccesses.map((x) => x.name)])
     )
     setSuccesses(newSuccesses)
-
-    console.log('🔵 [UPLOAD] Upload finalizado. Loading = false')
     setLoading(false)
   }, [files, path, bucketName, errors, successes, cacheControl, upsert])
 

@@ -104,6 +104,30 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (error) return error;
 
   const { id } = await params;
+  // Tentar remover arquivos do Storage (products/<id>/...)
+  try {
+    const limit = 1000
+    let offset = 0
+    while (true) {
+      const { data: objects, error: listErr } = await supabase.storage
+        .from('products')
+        .list(id, { limit, offset })
+      if (listErr) break
+      if (!objects || objects.length === 0) break
+      const paths = objects.map((o) => `${id}/${o.name}`)
+      const { error: rmErr } = await supabase.storage
+        .from('products')
+        .remove(paths)
+      if (rmErr) {
+        // Continua mesmo se falhar ao remover algum arquivo
+        break
+      }
+      if (objects.length < limit) break
+      offset += limit
+    }
+  } catch (e) {
+    // não bloquear exclusão do produto se limpeza do storage falhar
+  }
   const { error: delErr } = await supabase
     .from('products')
     .delete()
