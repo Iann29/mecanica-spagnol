@@ -37,6 +37,7 @@ import { SEOFields } from "./seo-fields"
 import { PriceHistoryTimeline } from "./price-history-timeline"
 import { VariantManager } from "./variant-manager"
 import { RelatedProductsSelector } from "./related-products-selector"
+import { useProductFormStore } from "@/store/product-form"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -69,50 +70,139 @@ export function ProductForm({ mode, productId, initialData, className }: Product
   const [categories, setCategories] = useState<CategoryOption[]>([])
   const [images, setImages] = useState<string[]>(initialData?.images ?? [])
   const [slugEdited, setSlugEdited] = useState(false)
+  
+  // Zustand store para persistência
+  const {
+    formData: persistedFormData,
+    setMode: setStoreMode,
+    updateFormData,
+    updateField,
+    setImages: setStoreImages,
+    setCategories: setStoreCategories,
+    clearForm,
+    getDebugInfo
+  } = useProductFormStore()
+
+  // Determinar valores iniciais: priorizar initialData (para edição), depois dados persistidos
+  const initialValues = useMemo(() => {
+    if (initialData) {
+      // Modo edição: usar dados do produto
+      return {
+        sku: initialData.sku ?? "",
+        name: initialData.name ?? "",
+        slug: initialData.slug ?? "",
+        description: initialData.description ?? "",
+        price: initialData.price ?? 0,
+        sale_price: initialData.sale_price ?? undefined,
+        stock_quantity: initialData.stock_quantity ?? 0,
+        category_id: initialData.category_id ?? 1,
+        images: initialData.images ?? [],
+        specifications: (initialData.specifications as Record<string, unknown>) ?? {},
+        is_featured: initialData.is_featured ?? false,
+        is_active: initialData.is_active ?? true,
+        reference: initialData.reference ?? "",
+        meta_title: initialData.meta_title ?? "",
+        meta_description: initialData.meta_description ?? "",
+        meta_keywords: initialData.meta_keywords ?? "",
+      }
+    } else if (mode === 'create' && persistedFormData && Object.keys(persistedFormData).length > 1) {
+      // Modo criação com dados persistidos
+      return {
+        sku: persistedFormData.sku ?? "",
+        name: persistedFormData.name ?? "",
+        slug: persistedFormData.slug ?? "",
+        description: persistedFormData.description ?? "",
+        price: persistedFormData.price ?? 0,
+        sale_price: persistedFormData.sale_price ?? undefined,
+        stock_quantity: persistedFormData.stock_quantity ?? 0,
+        category_id: persistedFormData.category_id ?? 1,
+        images: persistedFormData.images ?? [],
+        specifications: persistedFormData.specifications ?? {},
+        is_featured: persistedFormData.is_featured ?? false,
+        is_active: persistedFormData.is_active ?? true,
+        reference: persistedFormData.reference ?? "",
+        meta_title: persistedFormData.meta_title ?? "",
+        meta_description: persistedFormData.meta_description ?? "",
+        meta_keywords: persistedFormData.meta_keywords ?? "",
+      }
+    } else {
+      // Valores padrão para novo produto
+      return {
+        sku: "",
+        name: "",
+        slug: "",
+        description: "",
+        price: 0,
+        sale_price: undefined,
+        stock_quantity: 0,
+        category_id: 1,
+        images: [],
+        specifications: {},
+        is_featured: false,
+        is_active: true,
+        reference: "",
+        meta_title: "",
+        meta_description: "",
+        meta_keywords: "",
+      }
+    }
+  }, [initialData, mode, persistedFormData])
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(schema) as Resolver<ProductFormValues>,
-    defaultValues: {
-      sku: initialData?.sku ?? "",
-      name: initialData?.name ?? "",
-      slug: initialData?.slug ?? "",
-      description: initialData?.description ?? "",
-      price: initialData?.price ?? 0,
-      sale_price: initialData?.sale_price ?? undefined,
-      stock_quantity: initialData?.stock_quantity ?? 0,
-      category_id: initialData?.category_id ?? 1,
-      images: initialData?.images ?? [],
-      specifications: (initialData?.specifications as Record<string, unknown>) ?? {},
-      is_featured: initialData?.is_featured ?? false,
-      is_active: initialData?.is_active ?? true,
-      reference: initialData?.reference ?? "",
-      meta_title: initialData?.meta_title ?? "",
-      meta_description: initialData?.meta_description ?? "",
-      meta_keywords: initialData?.meta_keywords ?? "",
-    },
+    defaultValues: initialValues,
     mode: "onChange",
   })
+
+  // Inicializar store com modo e productId (só executa uma vez)
+  useEffect(() => {
+    setStoreMode(mode, productId)
+    
+    // Se é criação e não temos initialData, restaurar dados persistidos se existirem
+    if (mode === 'create' && !initialData && persistedFormData && Object.keys(persistedFormData).length > 1) {
+      form.reset(initialValues)
+      setImages(persistedFormData.images ?? [])
+    }
+  }, [mode, productId]) // Dependências mínimas para evitar re-runs
+
+  // Auto-salvar dados do formulário com debounce para evitar spam
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+    
+    const subscription = form.watch((value) => {
+      if (mode === 'create') {
+        // Debounce: só salva após 1 segundo de inatividade
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          updateFormData(value as Partial<ProductFormValues>)
+        }, 1000)
+      }
+    })
+    
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeoutId)
+    }
+  }, [form.watch, mode, updateFormData])
 
   // Carregar categorias
   useEffect(() => {
     const loadCategories = async () => {
-      console.log('--debug (remover) Loading categories...')
       const { data, error } = await supabase
         .from("categories")
         .select("id,name")
         .eq("is_active", true)
         .order("name")
-      console.log('--debug (remover) Categories loaded:', { data, error })
       if (error) {
         console.error('--debug (remover) Error loading categories:', error)
         toast.error('Erro ao carregar categorias')
         return
       }
       if (data && data.length > 0) {
-        console.log('--debug (remover) Setting categories:', data)
-        setCategories(data as unknown as CategoryOption[])
+        const categoryOptions = data as unknown as CategoryOption[]
+        setCategories(categoryOptions)
+        setStoreCategories(categoryOptions)
       } else {
-        console.log('--debug (remover) No categories found')
         toast.error('Nenhuma categoria encontrada. Crie pelo menos uma categoria primeiro.')
       }
     }
@@ -145,11 +235,6 @@ export function ProductForm({ mode, productId, initialData, className }: Product
           meta_description: prod.meta_description ?? "",
           meta_keywords: prod.meta_keywords ?? "",
         }
-        console.log('--debug (remover) Product data loaded for edit:', { 
-          originalProduct: prod, 
-          resetData, 
-          categoryId: prod.category_id 
-        })
         form.reset(resetData)
         setImages(prod.images ?? [])
       })()
@@ -161,7 +246,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
   const uploadBasePath = useMemo(() => {
     const slug = form.getValues("slug") || slugify(form.getValues("name")) || "produto"
     const ts = Date.now()
-    return `products/${slug}-${ts}`
+    return `${slug}-${ts}`
   }, [form])
 
   const upload = useSupabaseUpload({
@@ -172,36 +257,36 @@ export function ProductForm({ mode, productId, initialData, className }: Product
     maxFileSize: 6 * 1024 * 1024,
     upsert: false,
   })
-
-  // --debug (remover) Log do estado do upload
+  
+  // Log apenas quando o estado do upload mudar (não em cada render)
   useEffect(() => {
-    console.log('--debug (remover) Upload state changed:', {
-      files: upload.files.length,
-      loading: upload.loading,
-      successes: upload.successes.length,
-      errors: upload.errors.length,
-      uploadedUrls: upload.successes
+    console.log('📋 [PRODUCT-FORM] Upload state changed:', {
+      bucketName: "products",
+      path: uploadBasePath,
+      uploadState: {
+        files: upload.files.length,
+        loading: upload.loading,
+        successes: upload.successes.length,
+        errors: upload.errors.length
+      }
     })
-  }, [upload.files.length, upload.loading, upload.successes.length, upload.errors.length])
+  }, [upload.files.length, upload.loading, upload.successes.length, upload.errors.length, uploadBasePath])
 
   useEffect(() => {
     // quando upload conclui, atualizar imagens com URLs públicas
-    console.log('--debug (remover) Upload effect triggered:', { isSuccess: upload.isSuccess, successCount: upload.successes.length })
     const setPublicUrls = async () => {
       if (!upload.isSuccess || upload.successes.length === 0) {
-        console.log('--debug (remover) Upload not ready:', { isSuccess: upload.isSuccess, successCount: upload.successes.length })
         return
       }
-      console.log('--debug (remover) Processing upload successes:', upload.successes)
       const urls = upload.successes.map((name) => {
         const path = `${uploadBasePath}/${name}`
         const { data } = supabase.storage.from("products").getPublicUrl(path)
-        console.log('--debug (remover) Generated public URL:', { name, path, publicUrl: data.publicUrl })
         return data.publicUrl
       })
-      console.log('--debug (remover) All URLs generated:', urls)
-      setImages((prev) => Array.from(new Set([...prev, ...urls])))
-      form.setValue("images", Array.from(new Set([...images, ...urls])))
+      const newImages = Array.from(new Set([...images, ...urls]))
+      setImages(newImages)
+      setStoreImages(newImages)
+      form.setValue("images", newImages)
     }
     setPublicUrls()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -235,6 +320,12 @@ export function ProductForm({ mode, productId, initialData, className }: Product
       }
 
       toast.success(isEdit ? "Produto atualizado" : "Produto criado")
+      
+      // Limpar dados persistidos após sucesso
+      if (mode === 'create') {
+        clearForm()
+      }
+      
       router.push("/admin/produtos")
       router.refresh()
     } catch (e: unknown) {
@@ -246,6 +337,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
   const removeImage = (url: string) => {
     const next = images.filter((u) => u !== url)
     setImages(next)
+    setStoreImages(next)
     form.setValue("images", next)
   }
 
@@ -257,10 +349,34 @@ export function ProductForm({ mode, productId, initialData, className }: Product
             {mode === "create" ? "Novo Produto" : "Editar Produto"}
           </h1>
           <p className="text-sm text-muted-foreground">Preencha as informações do produto</p>
+          {mode === 'create' && persistedFormData && Object.keys(persistedFormData).length > 1 && (
+            <p className="text-xs text-blue-600 mt-1">
+              📝 Rascunho salvo automaticamente - seus dados estão protegidos
+            </p>
+          )}
         </div>
-        <Link href="/admin/produtos">
-          <Button variant="outline">Cancelar</Button>
-        </Link>
+        
+        <div className="flex items-center gap-2">
+          {mode === 'create' && persistedFormData && Object.keys(persistedFormData).length > 1 && (
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                clearForm()
+                form.reset(initialValues)
+                setImages([])
+                toast.success("Rascunho limpo com sucesso")
+              }}
+              className="text-destructive hover:text-destructive"
+            >
+              🗑️ Limpar Rascunho
+            </Button>
+          )}
+          <Link href="/admin/produtos">
+            <Button variant="outline">Cancelar</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 lg:grid-cols-1 gap-6">
@@ -343,13 +459,6 @@ export function ProductForm({ mode, productId, initialData, className }: Product
                     <FormLabel>Categoria</FormLabel>
                     <Select
                       onValueChange={(val) => {
-                        console.log('--debug (remover) Category onValueChange:', { 
-                          val, 
-                          valType: typeof val, 
-                          numberVal: Number(val),
-                          fieldValue: field.value,
-                          categoriesCount: categories.length 
-                        })
                         field.onChange(Number(val))
                       }}
                       value={field.value ? String(field.value) : undefined}

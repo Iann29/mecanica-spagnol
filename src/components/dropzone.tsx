@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { type UseSupabaseUploadReturn } from '@/hooks/use-supabase-upload'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, File, Loader2, Upload, X } from 'lucide-react'
-import { createContext, type PropsWithChildren, useCallback, useContext } from 'react'
+import { createContext, type PropsWithChildren, useCallback, useContext, useEffect } from 'react'
 
 export const formatBytes = (
   bytes: number,
@@ -78,10 +78,24 @@ const DropzoneContent = ({ className }: { className?: string }) => {
 
   const handleRemoveFile = useCallback(
     (fileName: string) => {
+      console.log('🗑️ [DROPZONE] Removendo arquivo:', fileName)
       setFiles(files.filter((file) => file.name !== fileName))
     },
     [files, setFiles]
   )
+  
+  // Log apenas quando o estado mudar (não em cada render)
+  useEffect(() => {
+    console.log('🎨 [DROPZONE] Estado mudou:', {
+      filesCount: files.length,
+      loading,
+      isSuccess,
+      successesCount: successes.length,
+      errorsCount: errors.length,
+      maxFiles,
+      exceedMaxFiles
+    })
+  }, [files.length, loading, isSuccess, successes.length, errors.length, maxFiles, exceedMaxFiles])
 
   if (isSuccess) {
     return (
@@ -164,7 +178,15 @@ const DropzoneContent = ({ className }: { className?: string }) => {
         <div className="mt-2">
           <Button
             variant="outline"
-            onClick={onUpload}
+            onClick={() => {
+              console.log('🚀 [DROPZONE] Botão Upload clicado!')
+              console.log('🚀 [DROPZONE] Estado antes do upload:', { 
+                files: files.map(f => f.name),
+                hasErrors: files.some((file) => file.errors.length !== 0),
+                loading 
+              })
+              onUpload()
+            }}
             disabled={files.some((file) => file.errors.length !== 0) || loading}
           >
             {loading ? (

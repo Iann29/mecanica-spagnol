@@ -30,42 +30,45 @@ export function SpecificationsEditor({ value, onChange, className }: Specificati
     }))
   })
 
-  // --debug (remover) Atualizar specs quando value mudar (para carregar dados na edição)
+  // Atualizar specs quando value mudar (para carregar dados na edição)
   useEffect(() => {
-    console.log('--debug (remover) SpecificationsEditor useEffect triggered:', { value, valueType: typeof value })
-    const newSpecs = Object.entries(value || {}).map(([key, val]) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      key,
-      value: String(val),
-    }))
-    console.log('--debug (remover) SpecificationsEditor new specs generated:', newSpecs)
-    
-    // --debug (remover) Só atualizar se realmente mudou para evitar loops
-    const currentKeys = specs.map(s => s.key).sort().join('|')
-    const newKeys = newSpecs.map(s => s.key).sort().join('|')
-    
-    if (currentKeys !== newKeys) {
-      console.log('--debug (remover) SpecificationsEditor specs changed, updating:', { currentKeys, newKeys })
-      setSpecs(newSpecs)
-    } else {
-      console.log('--debug (remover) SpecificationsEditor specs unchanged, skipping update')
+    // Só processar no carregamento inicial ou quando recebemos dados externos (modo edição)
+    if (Object.keys(value || {}).length === 0) {
+      return
     }
-  }, [value, specs])
+    
+    // Verificar se são dados externos (diferentes do estado atual)
+    const currentCompleteSpecs = specs.filter(s => s.key.trim() && s.value.trim())
+    const currentSpecsObject: Record<string, string> = {}
+    currentCompleteSpecs.forEach(s => {
+      currentSpecsObject[s.key.trim()] = s.value.trim()
+    })
+    
+    const currentDataString = JSON.stringify(currentSpecsObject)
+    const newDataString = JSON.stringify(value || {})
+    
+    // Só atualizar se os dados externos mudaram (não do estado local)
+    if (currentDataString !== newDataString && Object.keys(value || {}).length > 0) {
+      const newSpecs = Object.entries(value || {}).map(([key, val]) => ({
+        id: Math.random().toString(36).substr(2, 9),
+        key,
+        value: String(val),
+      }))
+      setSpecs(newSpecs)
+    }
+  }, [value])
 
   const updateParent = (newSpecs: SpecificationItem[]) => {
-    console.log('--debug (remover) SpecificationsEditor updateParent called:', newSpecs)
     const result: Record<string, string> = {}
     newSpecs.forEach(spec => {
       if (spec.key.trim() && spec.value.trim()) {
         result[spec.key.trim()] = spec.value.trim()
       }
     })
-    console.log('--debug (remover) SpecificationsEditor result to parent:', result)
     onChange(result)
   }
 
   const addSpec = () => {
-    console.log('--debug (remover) SpecificationsEditor addSpec called')
     const newSpecs = [
       ...specs,
       {
@@ -74,9 +77,8 @@ export function SpecificationsEditor({ value, onChange, className }: Specificati
         value: "",
       },
     ]
-    console.log('--debug (remover) SpecificationsEditor addSpec newSpecs:', newSpecs)
     setSpecs(newSpecs)
-    // --debug (remover) NÃO chamar updateParent para specs vazias para evitar loop
+    // NÃO chamar updateParent para specs vazias para evitar loop
     // updateParent(newSpecs) - removido temporariamente
   }
 
@@ -87,12 +89,13 @@ export function SpecificationsEditor({ value, onChange, className }: Specificati
   }
 
   const updateSpec = (id: string, field: 'key' | 'value', newValue: string) => {
-    console.log('--debug (remover) SpecificationsEditor updateSpec called:', { id, field, newValue })
     const newSpecs = specs.map(spec =>
       spec.id === id ? { ...spec, [field]: newValue } : spec
     )
-    console.log('--debug (remover) SpecificationsEditor updateSpec newSpecs:', newSpecs)
     setSpecs(newSpecs)
+    
+    // Sempre atualizar o formulário principal com as especificações válidas
+    // Isso permite manter especificações vazias no estado local sem afetar o form
     updateParent(newSpecs)
   }
 
