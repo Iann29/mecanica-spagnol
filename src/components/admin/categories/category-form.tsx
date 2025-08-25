@@ -115,8 +115,9 @@ export function CategoryForm({ mode, categoryId, initialData, className }: Categ
       toast.success(isEdit ? "Categoria atualizada" : "Categoria criada")
       router.push("/admin/categorias")
       router.refresh()
-    } catch (e: any) {
-      toast.error(e.message ?? "Erro ao salvar categoria")
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Erro ao salvar categoria"
+      toast.error(errorMessage)
     }
   }
 

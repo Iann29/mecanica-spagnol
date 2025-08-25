@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { UseFormReturn } from "react-hook-form"
+import { ProductFormValues } from "@/types/forms"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -12,7 +13,7 @@ import { Search, Globe, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface SEOFieldsProps {
-  form: UseFormReturn<any>
+  form: UseFormReturn<ProductFormValues>
   productName?: string
   className?: string
 }
@@ -109,7 +110,7 @@ export function SEOFields({ form, productName, className }: SEOFieldsProps) {
               }}
               className="text-xs text-primary hover:underline"
             >
-              Usar sugestão: "{suggestedTitle}"
+              Usar sugestão: &quot;{suggestedTitle}&quot;
             </button>
           )}
         </div>

@@ -26,11 +26,11 @@ async function getAuthorizedClient() {
 }
 
 // GET /api/produtos/[id]/related -> listar produtos relacionados
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
 
-  const productId = params.id;
+  const { id: productId } = await params;
 
   try {
     // Verificar se o produto existe
@@ -84,11 +84,11 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 }
 
 // POST /api/produtos/[id]/related -> adicionar produto relacionado
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { supabase, userId, error } = await getAuthorizedClient();
   if (error) return error;
 
-  const productId = params.id;
+  const { id: productId } = await params;
 
   let json: unknown;
   try {

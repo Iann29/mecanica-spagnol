@@ -80,21 +80,25 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
 
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+      console.log('--debug (remover) onDrop called:', { acceptedFiles: acceptedFiles.length, rejections: fileRejections.length })
       const validFiles = acceptedFiles
         .filter((file) => !files.find((x) => x.name === file.name))
         .map((file) => {
+          console.log('--debug (remover) Processing valid file:', file.name)
           ;(file as FileWithPreview).preview = URL.createObjectURL(file)
           ;(file as FileWithPreview).errors = []
           return file as FileWithPreview
         })
 
       const invalidFiles = fileRejections.map(({ file, errors }) => {
+        console.log('--debug (remover) Processing invalid file:', file.name, 'errors:', errors)
         ;(file as FileWithPreview).preview = URL.createObjectURL(file)
         ;(file as FileWithPreview).errors = errors
         return file as FileWithPreview
       })
 
       const newFiles = [...files, ...validFiles, ...invalidFiles]
+      console.log('--debug (remover) Setting new files:', { totalFiles: newFiles.length, validFiles: validFiles.length, invalidFiles: invalidFiles.length })
 
       setFiles(newFiles)
     },
@@ -111,6 +115,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   })
 
   const onUpload = useCallback(async () => {
+    console.log('--debug (remover) onUpload called:', { filesCount: files.length, errorsCount: errors.length, successesCount: successes.length })
     setLoading(true)
 
     // [Joshen] This is to support handling partial successes
@@ -124,8 +129,11 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
           ]
         : files
 
+    console.log('--debug (remover) Files to upload:', filesToUpload.map(f => f.name))
+
     const responses = await Promise.all(
       filesToUpload.map(async (file) => {
+        console.log('--debug (remover) Uploading file:', file.name, 'to path:', !!path ? `${path}/${file.name}` : file.name)
         const { error } = await supabase.storage
           .from(bucketName)
           .upload(!!path ? `${path}/${file.name}` : file.name, file, {
@@ -133,12 +141,16 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
             upsert,
           })
         if (error) {
+          console.log('--debug (remover) Upload error for', file.name, ':', error.message)
           return { name: file.name, message: error.message }
         } else {
+          console.log('--debug (remover) Upload success for', file.name)
           return { name: file.name, message: undefined }
         }
       })
     )
+
+    console.log('--debug (remover) All upload responses:', responses)
 
     const responseErrors = responses.filter((x) => x.message !== undefined)
     // if there were errors previously, this function tried to upload the files again so we should clear/overwrite the existing errors.

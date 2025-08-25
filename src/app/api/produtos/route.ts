@@ -18,6 +18,7 @@ const productInsertSchema = z.object({
   specifications: z.record(z.string(), z.unknown()).default({}),
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
+  reference: z.string().max(100).optional(),
   meta_title: z.string().max(60).optional(),
   meta_description: z.string().optional(),
   meta_keywords: z.string().optional(),
@@ -56,7 +57,13 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('products')
-    .select('*', { count: 'exact' });
+    .select(`
+      *,
+      categories!inner(
+        id,
+        name
+      )
+    `, { count: 'exact' });
 
   if (q) {
     // Busca por nome ou sku

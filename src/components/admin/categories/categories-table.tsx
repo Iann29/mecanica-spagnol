@@ -64,7 +64,7 @@ export function CategoriesTable({ className }: { className?: string }) {
       const json: ApiListResponse<CategoryItem> = await res.json()
       setRows(json.data)
       setTotal(json.total)
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast.error("Falha ao carregar categorias")
     } finally {
       setLoading(false)
@@ -96,8 +96,9 @@ export function CategoriesTable({ className }: { className?: string }) {
       toast.success("Categoria excluída")
       setDeleteId(null)
       load()
-    } catch (e: any) {
-      toast.error(e.message ?? "Falha ao excluir")
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Falha ao excluir"
+      toast.error(errorMessage)
     }
   }
 

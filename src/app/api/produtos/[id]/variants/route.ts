@@ -30,11 +30,11 @@ async function getAuthorizedClient() {
 }
 
 // GET /api/produtos/[id]/variants -> listar variações do produto
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
 
-  const productId = params.id;
+  const { id: productId } = await params;
 
   try {
     // Verificar se o produto existe
@@ -74,11 +74,11 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 }
 
 // POST /api/produtos/[id]/variants -> criar nova variação
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
 
-  const productId = params.id;
+  const { id: productId } = await params;
 
   let json: unknown;
   try {

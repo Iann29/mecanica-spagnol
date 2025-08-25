@@ -18,11 +18,11 @@ async function getAuthorizedClient() {
 }
 
 // GET /api/produtos/[id]/price-history -> busca histórico de preços do produto
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
 
-  const productId = params.id;
+  const { id: productId } = await params;
 
   try {
     // Verificar se o produto existe
@@ -36,16 +36,10 @@ export async function GET(_request: Request, { params }: { params: { id: string 
       return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
     }
 
-    // Buscar histórico de preços com informações do usuário que fez a alteração
+    // Buscar histórico de preços simples (sem JOIN complexo por enquanto)
     const { data: history, error: historyError } = await supabase
       .from('price_history')
-      .select(`
-        *,
-        profile:changed_by (
-          full_name,
-          email
-        )
-      `)
+      .select('*')
       .eq('product_id', productId)
       .order('changed_at', { ascending: false })
       .limit(50); // Limitar a 50 registros mais recentes

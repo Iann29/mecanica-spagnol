@@ -70,7 +70,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
   const [images, setImages] = useState<string[]>(initialData?.images ?? [])
   const [slugEdited, setSlugEdited] = useState(false)
 
-  const form = useForm<ProductFormValues, any, ProductFormValues>({
+  const form = useForm<ProductFormValues>({
     resolver: zodResolver(schema) as Resolver<ProductFormValues>,
     defaultValues: {
       sku: initialData?.sku ?? "",
@@ -80,7 +80,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
       price: initialData?.price ?? 0,
       sale_price: initialData?.sale_price ?? undefined,
       stock_quantity: initialData?.stock_quantity ?? 0,
-      category_id: (initialData?.category_id as unknown as number) ?? (undefined as unknown as number),
+      category_id: initialData?.category_id ?? 1,
       images: initialData?.images ?? [],
       specifications: (initialData?.specifications as Record<string, unknown>) ?? {},
       is_featured: initialData?.is_featured ?? false,
@@ -96,13 +96,24 @@ export function ProductForm({ mode, productId, initialData, className }: Product
   // Carregar categorias
   useEffect(() => {
     const loadCategories = async () => {
+      console.log('--debug (remover) Loading categories...')
       const { data, error } = await supabase
         .from("categories")
         .select("id,name")
         .eq("is_active", true)
         .order("name")
-      if (!error && data) {
+      console.log('--debug (remover) Categories loaded:', { data, error })
+      if (error) {
+        console.error('--debug (remover) Error loading categories:', error)
+        toast.error('Erro ao carregar categorias')
+        return
+      }
+      if (data && data.length > 0) {
+        console.log('--debug (remover) Setting categories:', data)
         setCategories(data as unknown as CategoryOption[])
+      } else {
+        console.log('--debug (remover) No categories found')
+        toast.error('Nenhuma categoria encontrada. Crie pelo menos uma categoria primeiro.')
       }
     }
     loadCategories()
@@ -116,7 +127,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
         if (!res.ok) return
         const json = await res.json()
         const prod: Product = json.data
-        form.reset({
+        const resetData = {
           sku: prod.sku,
           name: prod.name,
           slug: prod.slug,
@@ -124,7 +135,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
           price: prod.price,
           sale_price: prod.sale_price ?? undefined,
           stock_quantity: prod.stock_quantity,
-          category_id: prod.category_id,
+          category_id: prod.category_id ?? 1,
           images: prod.images ?? [],
           specifications: (prod.specifications as Record<string, unknown>) ?? {},
           is_featured: prod.is_featured,
@@ -133,7 +144,13 @@ export function ProductForm({ mode, productId, initialData, className }: Product
           meta_title: prod.meta_title ?? "",
           meta_description: prod.meta_description ?? "",
           meta_keywords: prod.meta_keywords ?? "",
+        }
+        console.log('--debug (remover) Product data loaded for edit:', { 
+          originalProduct: prod, 
+          resetData, 
+          categoryId: prod.category_id 
         })
+        form.reset(resetData)
         setImages(prod.images ?? [])
       })()
     }
@@ -156,15 +173,33 @@ export function ProductForm({ mode, productId, initialData, className }: Product
     upsert: false,
   })
 
+  // --debug (remover) Log do estado do upload
+  useEffect(() => {
+    console.log('--debug (remover) Upload state changed:', {
+      files: upload.files.length,
+      loading: upload.loading,
+      successes: upload.successes.length,
+      errors: upload.errors.length,
+      uploadedUrls: upload.successes
+    })
+  }, [upload.files.length, upload.loading, upload.successes.length, upload.errors.length])
+
   useEffect(() => {
     // quando upload conclui, atualizar imagens com URLs públicas
+    console.log('--debug (remover) Upload effect triggered:', { isSuccess: upload.isSuccess, successCount: upload.successes.length })
     const setPublicUrls = async () => {
-      if (!upload.isSuccess || upload.successes.length === 0) return
+      if (!upload.isSuccess || upload.successes.length === 0) {
+        console.log('--debug (remover) Upload not ready:', { isSuccess: upload.isSuccess, successCount: upload.successes.length })
+        return
+      }
+      console.log('--debug (remover) Processing upload successes:', upload.successes)
       const urls = upload.successes.map((name) => {
         const path = `${uploadBasePath}/${name}`
         const { data } = supabase.storage.from("products").getPublicUrl(path)
+        console.log('--debug (remover) Generated public URL:', { name, path, publicUrl: data.publicUrl })
         return data.publicUrl
       })
+      console.log('--debug (remover) All URLs generated:', urls)
       setImages((prev) => Array.from(new Set([...prev, ...urls])))
       form.setValue("images", Array.from(new Set([...images, ...urls])))
     }
@@ -202,8 +237,9 @@ export function ProductForm({ mode, productId, initialData, className }: Product
       toast.success(isEdit ? "Produto atualizado" : "Produto criado")
       router.push("/admin/produtos")
       router.refresh()
-    } catch (e: any) {
-      toast.error(e.message ?? "Erro ao salvar produto")
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Erro ao salvar produto"
+      toast.error(errorMessage)
     }
   }
 
@@ -306,7 +342,16 @@ export function ProductForm({ mode, productId, initialData, className }: Product
                   <FormItem>
                     <FormLabel>Categoria</FormLabel>
                     <Select
-                      onValueChange={(val) => field.onChange(Number(val))}
+                      onValueChange={(val) => {
+                        console.log('--debug (remover) Category onValueChange:', { 
+                          val, 
+                          valType: typeof val, 
+                          numberVal: Number(val),
+                          fieldValue: field.value,
+                          categoriesCount: categories.length 
+                        })
+                        field.onChange(Number(val))
+                      }}
                       value={field.value ? String(field.value) : undefined}
                     >
                       <FormControl>

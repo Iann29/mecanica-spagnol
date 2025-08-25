@@ -18,8 +18,9 @@ const productUpdateSchema = z.object({
   specifications: z.record(z.string(), z.any()).optional(),
   is_featured: z.boolean().optional(),
   is_active: z.boolean().optional(),
+  reference: z.string().max(100).optional(),
   meta_title: z.string().max(60).optional(),
-  meta_description: z.string().max(160).optional(),
+  meta_description: z.string().optional(),
   meta_keywords: z.string().optional(),
 });
 
@@ -39,14 +40,20 @@ async function getAuthorizedClient() {
 }
 
 // GET /api/produtos/[id]
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
 
-  const id = params.id;
+  const { id } = await params;
   const { data, error: qErr } = await supabase
     .from('products')
-    .select('*')
+    .select(`
+      *,
+      categories!inner(
+        id,
+        name
+      )
+    `)
     .eq('id', id)
     .single();
 
@@ -58,7 +65,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 }
 
 // PATCH /api/produtos/[id]
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
 
@@ -75,11 +82,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 
   const payload: ProductUpdate = parsed.data as ProductUpdate;
+  const { id } = await params;
 
   const { data, error: upErr } = await supabase
     .from('products')
     .update(payload)
-    .eq('id', params.id)
+    .eq('id', id)
     .select('*')
     .single();
 
@@ -91,14 +99,15 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 // DELETE /api/produtos/[id]
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
 
+  const { id } = await params;
   const { error: delErr } = await supabase
     .from('products')
     .delete()
-    .eq('id', params.id);
+    .eq('id', id);
 
   if (delErr) {
     return NextResponse.json({ error: delErr.message }, { status: 400 });

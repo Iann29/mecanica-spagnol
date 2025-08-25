@@ -25,6 +25,10 @@ interface ProductItem {
   stock_quantity: number
   is_active: boolean
   created_at: string
+  categories?: {
+    id: number
+    name: string
+  }
 }
 
 interface ApiListResponse<T> {
@@ -67,7 +71,7 @@ export function ProductsTable({ className }: { className?: string }) {
       const json: ApiListResponse<ProductItem> = await res.json()
       setRows(json.data)
       setTotal(json.total)
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast.error("Falha ao carregar produtos")
     } finally {
       setLoading(false)
@@ -96,8 +100,9 @@ export function ProductsTable({ className }: { className?: string }) {
       toast.success("Produto excluído")
       setDeleteId(null)
       load()
-    } catch (e: any) {
-      toast.error(e.message ?? "Falha ao excluir")
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : "Falha ao excluir"
+      toast.error(errorMessage)
     }
   }
 
@@ -145,8 +150,9 @@ export function ProductsTable({ className }: { className?: string }) {
       setSelectedIds(new Set())
       setBulkAction("")
       load()
-    } catch (e: any) {
-      toast.error(e.message ?? 'Falha na operação em lote')
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Falha na operação em lote'
+      toast.error(errorMessage)
     } finally {
       setBulkLoading(false)
     }
@@ -194,8 +200,9 @@ export function ProductsTable({ className }: { className?: string }) {
       window.URL.revokeObjectURL(downloadUrl)
       
       toast.success('Produtos exportados com sucesso!')
-    } catch (error: any) {
-      toast.error(error.message ?? 'Erro ao exportar produtos')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao exportar produtos'
+      toast.error(errorMessage)
     } finally {
       setExportLoading(false)
     }
@@ -337,6 +344,7 @@ export function ProductsTable({ className }: { className?: string }) {
                 <TableHead>SKU</TableHead>
                 <TableHead>Referência</TableHead>
                 <TableHead>Nome</TableHead>
+                <TableHead>Categoria</TableHead>
                 <TableHead className="text-right">Preço</TableHead>
                 <TableHead className="text-right">Estoque</TableHead>
                 <TableHead>Status</TableHead>
@@ -347,7 +355,7 @@ export function ProductsTable({ className }: { className?: string }) {
             <TableBody>
               {rows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     Nenhum produto encontrado
                   </TableCell>
                 </TableRow>
@@ -366,6 +374,9 @@ export function ProductsTable({ className }: { className?: string }) {
                     {p.reference || "-"}
                   </TableCell>
                   <TableCell className="font-medium">{p.name}</TableCell>
+                  <TableCell className="text-sm">
+                    <Badge variant="outline">{p.categories?.name || "Sem categoria"}</Badge>
+                  </TableCell>
                   <TableCell className="text-right">R$ {p.price.toFixed(2)}</TableCell>
                   <TableCell className="text-right">{p.stock_quantity}</TableCell>
                   <TableCell>
