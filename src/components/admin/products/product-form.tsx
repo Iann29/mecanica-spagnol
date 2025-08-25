@@ -32,6 +32,11 @@ import {
 } from "@/components/ui/select"
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone"
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload"
+import { SpecificationsEditor } from "./specifications-editor"
+import { SEOFields } from "./seo-fields"
+import { PriceHistoryTimeline } from "./price-history-timeline"
+import { VariantManager } from "./variant-manager"
+import { RelatedProductsSelector } from "./related-products-selector"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -80,6 +85,9 @@ export function ProductForm({ mode, productId, initialData, className }: Product
       specifications: (initialData?.specifications as Record<string, unknown>) ?? {},
       is_featured: initialData?.is_featured ?? false,
       is_active: initialData?.is_active ?? true,
+      meta_title: initialData?.meta_title ?? "",
+      meta_description: initialData?.meta_description ?? "",
+      meta_keywords: initialData?.meta_keywords ?? "",
     },
     mode: "onChange",
   })
@@ -120,6 +128,9 @@ export function ProductForm({ mode, productId, initialData, className }: Product
           specifications: (prod.specifications as Record<string, unknown>) ?? {},
           is_featured: prod.is_featured,
           is_active: prod.is_active,
+          meta_title: prod.meta_title ?? "",
+          meta_description: prod.meta_description ?? "",
+          meta_keywords: prod.meta_keywords ?? "",
         })
         setImages(prod.images ?? [])
       })()
@@ -219,9 +230,10 @@ export function ProductForm({ mode, productId, initialData, className }: Product
         </div>
       </div>
 
-      <Form {...form}>
-        <form className="grid grid-cols-1 md:grid-cols-3 gap-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <Card className="p-4 md:col-span-2 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Form {...form}>
+          <form className="lg:col-span-2 space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+            <Card className="p-6 space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -417,66 +429,86 @@ export function ProductForm({ mode, productId, initialData, className }: Product
               name="specifications"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Especificações (JSON)</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={6}
-                      placeholder='{"compatibilidade":"Carro X"}'
-                      value={JSON.stringify(field.value ?? {}, null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const val = JSON.parse(e.target.value)
-                          field.onChange(val)
-                        } catch {
-                          // ignore enquanto digita
-                        }
-                      }}
+                    <SpecificationsEditor
+                      value={field.value as Record<string, unknown>}
+                      onChange={field.onChange}
                     />
                   </FormControl>
-                  <FormDescription>Opcional. Estrutura livre em JSON.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            </Card>
+
+            {/* Variações do Produto */}
+            <VariantManager 
+              productId={mode === "edit" ? productId : undefined}
+              baseSKU={form.watch("sku")}
+              basePrice={form.watch("price")}
+            />
+
+            {/* Produtos Relacionados */}
+            <RelatedProductsSelector 
+              productId={mode === "edit" ? productId : undefined}
+              currentProductName={form.watch("name")}
+            />
+          </form>
+        </Form>
+
+        {/* Sidebar com configurações e SEO */}
+        <div className="space-y-6">
+          <Card className="p-6 space-y-4">
+            <h3 className="font-semibold">Configurações</h3>
+            <Form {...form}>
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="is_featured"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Produto em destaque</FormLabel>
+                        <FormDescription>
+                          Aparecerá na página inicial
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_active"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Produto ativo</FormLabel>
+                        <FormDescription>
+                          Visível na loja online
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </Form>
           </Card>
 
-          <Card className="p-4 space-y-4">
-            <div className="flex items-center space-x-2">
-              <FormField
-                control={form.control}
-                name="is_featured"
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-2">
-                    <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormLabel>Destaque</FormLabel>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <FormField
-                control={form.control}
-                name="is_active"
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-2">
-                    <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormLabel>Ativo</FormLabel>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              Dica: você pode salvar agora e editar depois. Não esqueça de publicar ("Ativo").
-            </div>
-          </Card>
-        </form>
-      </Form>
+          <SEOFields form={form} productName={form.watch("name")} />
+          
+          {/* Histórico de Preços - apenas no modo edição */}
+          {mode === "edit" && productId && (
+            <PriceHistoryTimeline productId={productId} />
+          )}
+        </div>
+      </div>
     </div>
   )
 }

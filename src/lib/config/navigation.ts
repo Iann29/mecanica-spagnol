@@ -95,6 +95,10 @@ export const adminNav: NavItem[] = [
     href: '/admin/produtos',
   },
   {
+    title: 'Categorias',
+    href: '/admin/categorias',
+  },
+  {
     title: 'Pedidos',
     href: '/admin/pedidos',
   },

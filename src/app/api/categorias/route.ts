@@ -2,25 +2,14 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { getUser, checkIsAdmin } from '@/lib/supabase/auth-server';
-import type { ProductInsert } from '@/types/database';
 
-// Schema de validação para criação de produto (compatível com ProductInsert)
-const productInsertSchema = z.object({
-  sku: z.string().min(1, 'SKU é obrigatório'),
+// Schema de validação para criação de categoria
+const categoryInsertSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   slug: z.string().min(1, 'Slug é obrigatório'),
   description: z.string().optional(),
-  price: z.number().nonnegative(),
-  sale_price: z.number().nonnegative().optional(),
-  stock_quantity: z.number().int().nonnegative().default(0),
-  category_id: z.number().int(),
-  images: z.array(z.string()).default([]),
-  specifications: z.record(z.string(), z.unknown()).default({}),
-  is_featured: z.boolean().default(false),
+  image_url: z.string().url().optional().or(z.literal('')),
   is_active: z.boolean().default(true),
-  meta_title: z.string().max(60).optional(),
-  meta_description: z.string().max(160).optional(),
-  meta_keywords: z.string().optional(),
 });
 
 async function getAuthorizedClient() {
@@ -38,7 +27,7 @@ async function getAuthorizedClient() {
   return { supabase };
 }
 
-// GET /api/produtos -> lista com paginação, busca e ordenação
+// GET /api/categorias -> lista com paginação e busca
 export async function GET(request: Request) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
@@ -47,28 +36,19 @@ export async function GET(request: Request) {
   const page = Math.max(parseInt(url.searchParams.get('page') || '1', 10), 1);
   const pageSize = Math.min(Math.max(parseInt(url.searchParams.get('pageSize') || '10', 10), 1), 100);
   const q = url.searchParams.get('q')?.trim();
-  const categoryId = url.searchParams.get('category_id');
   const isActive = url.searchParams.get('is_active');
-  const sort = url.searchParams.get('sort') || 'created_at.desc';
+  const sort = url.searchParams.get('sort') || 'name.asc';
 
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
   let query = supabase
-    .from('products')
+    .from('categories')
     .select('*', { count: 'exact' });
 
   if (q) {
-    // Busca por nome ou sku
     const like = `%${q}%`;
-    query = query.or(`name.ilike.${like},sku.ilike.${like}`);
-  }
-
-  if (categoryId) {
-    const idNum = Number(categoryId);
-    if (!Number.isNaN(idNum)) {
-      query = query.eq('category_id', idNum);
-    }
+    query = query.or(`name.ilike.${like},description.ilike.${like}`);
   }
 
   if (isActive === 'true' || isActive === 'false') {
@@ -78,9 +58,9 @@ export async function GET(request: Request) {
   // Ordenação
   const [sortColumn, sortDir] = sort.split('.') as [string, 'asc' | 'desc' | undefined];
   if (sortColumn) {
-    query = query.order(sortColumn, { ascending: (sortDir || 'desc') === 'asc', nullsFirst: false });
+    query = query.order(sortColumn, { ascending: (sortDir || 'asc') === 'asc', nullsFirst: false });
   } else {
-    query = query.order('created_at', { ascending: false });
+    query = query.order('name', { ascending: true });
   }
 
   const { data, error: qErr, count } = await query.range(from, to);
@@ -96,7 +76,7 @@ export async function GET(request: Request) {
   });
 }
 
-// POST /api/produtos -> cria produto
+// POST /api/categorias -> cria categoria
 export async function POST(request: Request) {
   const { supabase, error } = await getAuthorizedClient();
   if (error) return error;
@@ -108,16 +88,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'JSON inválido' }, { status: 400 });
   }
 
-  const parsed = productInsertSchema.safeParse(json);
+  const parsed = categoryInsertSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const payload: ProductInsert = parsed.data as ProductInsert;
+  // Verificar se slug já existe
+  const { data: existingSlug } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('slug', parsed.data.slug)
+    .single();
+
+  if (existingSlug) {
+    return NextResponse.json({ error: 'Slug já existe' }, { status: 400 });
+  }
+
+  // Verificar se nome já existe
+  const { data: existingName } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('name', parsed.data.name)
+    .single();
+
+  if (existingName) {
+    return NextResponse.json({ error: 'Nome já existe' }, { status: 400 });
+  }
 
   const { data, error: insErr } = await supabase
-    .from('products')
-    .insert(payload)
+    .from('categories')
+    .insert(parsed.data)
     .select('*')
     .single();
 
