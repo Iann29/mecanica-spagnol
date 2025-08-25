@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -67,13 +67,17 @@ function slugify(input: string) {
 
 export function ProductForm({ mode, productId, initialData, className }: ProductFormProps) {
   const router = useRouter()
-  const [categories, setCategories] = useState<CategoryOption[]>([])
   const [images, setImages] = useState<string[]>(initialData?.images ?? [])
   const [slugEdited, setSlugEdited] = useState(false)
+  const [deletingImage, setDeletingImage] = useState<string | null>(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [initialImagesCount] = useState(initialData?.images?.length ?? 0)
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
   
   // Zustand store para persistência
   const {
     formData: persistedFormData,
+    categories: storedCategories,
     setMode: setStoreMode,
     updateFormData,
     updateField,
@@ -82,6 +86,9 @@ export function ProductForm({ mode, productId, initialData, className }: Product
     clearForm,
     getDebugInfo
   } = useProductFormStore()
+  
+  // Estado das categorias: usar do store primeiro, depois estado local
+  const [localCategories, setLocalCategories] = useState<CategoryOption[]>(storedCategories || [])
 
   // Determinar valores iniciais: priorizar initialData (para edição), depois dados persistidos
   const initialValues = useMemo(() => {
@@ -185,69 +192,111 @@ export function ProductForm({ mode, productId, initialData, className }: Product
     }
   }, [form.watch, mode, updateFormData])
 
-  // Carregar categorias
+  // Carregar categorias com fallback do store
   useEffect(() => {
     const loadCategories = async () => {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id,name")
-        .eq("is_active", true)
-        .order("name")
-      if (error) {
-        console.error('--debug (remover) Error loading categories:', error)
-        toast.error('Erro ao carregar categorias')
-        return
-      }
-      if (data && data.length > 0) {
-        const categoryOptions = data as unknown as CategoryOption[]
-        setCategories(categoryOptions)
-        setStoreCategories(categoryOptions)
-      } else {
-        toast.error('Nenhuma categoria encontrada. Crie pelo menos uma categoria primeiro.')
+      try {
+        setCategoriesLoading(true)
+        
+        // Se já temos categorias no store, usar enquanto carrega
+        if (storedCategories && storedCategories.length > 0) {
+          setLocalCategories(storedCategories)
+          setCategoriesLoading(false)
+        }
+        
+        const { data, error } = await supabase
+          .from("categories")
+          .select("id,name")
+          .eq("is_active", true)
+          .order("name")
+          
+        if (error) {
+          console.error('Erro ao carregar categorias:', error)
+          toast.error('Erro ao carregar categorias')
+          
+          // Se temos categorias no store, manter elas
+          if (storedCategories && storedCategories.length > 0) {
+            setLocalCategories(storedCategories)
+          }
+          return
+        }
+        
+        if (data && data.length > 0) {
+          const categoryOptions = data as unknown as CategoryOption[]
+          setLocalCategories(categoryOptions)
+          setStoreCategories(categoryOptions)
+        } else {
+          toast.error('Nenhuma categoria encontrada. Crie pelo menos uma categoria primeiro.')
+        }
+      } catch (error) {
+        console.error('Erro inesperado ao carregar categorias:', error)
+        toast.error('Erro inesperado ao carregar categorias')
+        
+        // Fallback para categorias do store
+        if (storedCategories && storedCategories.length > 0) {
+          setLocalCategories(storedCategories)
+        }
+      } finally {
+        setCategoriesLoading(false)
       }
     }
+    
     loadCategories()
-  }, [])
+  }, []) // Não incluir storedCategories nas dependências para evitar loops
 
   // Se modo edição e sem initialData, buscar dados do produto
   useEffect(() => {
     if (mode === "edit" && productId && !initialData) {
       ;(async () => {
-        const res = await fetch(`/api/produtos/${productId}`, { cache: "no-store" })
-        if (!res.ok) return
-        const json = await res.json()
-        const prod: Product = json.data
-        const resetData = {
-          sku: prod.sku,
-          name: prod.name,
-          slug: prod.slug,
-          description: prod.description ?? "",
-          price: prod.price,
-          sale_price: prod.sale_price ?? undefined,
-          stock_quantity: prod.stock_quantity,
-          category_id: prod.category_id ?? 1,
-          images: prod.images ?? [],
-          specifications: (prod.specifications as Record<string, unknown>) ?? {},
-          is_featured: prod.is_featured,
-          is_active: prod.is_active,
-          reference: prod.reference ?? "",
-          meta_title: prod.meta_title ?? "",
-          meta_description: prod.meta_description ?? "",
-          meta_keywords: prod.meta_keywords ?? "",
+        try {
+          const res = await fetch(`/api/produtos/${productId}`, { cache: "no-store" })
+          if (!res.ok) {
+            console.error('Erro ao buscar produto:', res.status, res.statusText)
+            toast.error('Erro ao carregar dados do produto')
+            return
+          }
+          const json = await res.json()
+          const prod: Product = json.data
+          const resetData = {
+            sku: prod.sku,
+            name: prod.name,
+            slug: prod.slug,
+            description: prod.description ?? "",
+            price: prod.price,
+            sale_price: prod.sale_price ?? undefined,
+            stock_quantity: prod.stock_quantity,
+            category_id: prod.category_id ?? 1,
+            images: prod.images ?? [],
+            specifications: (prod.specifications as Record<string, unknown>) ?? {},
+            is_featured: prod.is_featured,
+            is_active: prod.is_active,
+            reference: prod.reference ?? "",
+            meta_title: prod.meta_title ?? "",
+            meta_description: prod.meta_description ?? "",
+            meta_keywords: prod.meta_keywords ?? "",
+          }
+          form.reset(resetData)
+          setImages(prod.images ?? [])
+        } catch (error) {
+          console.error('Erro ao buscar dados do produto:', error)
+          toast.error('Erro ao carregar produto. Verifique sua conexão.')
         }
-        form.reset(resetData)
-        setImages(prod.images ?? [])
       })()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, productId])
 
-  // Upload
+  // Upload path fixo para consistência
   const uploadBasePath = useMemo(() => {
-    const slug = form.getValues("slug") || slugify(form.getValues("name")) || "produto"
+    // Em modo edição, sempre usar o ID do produto (pasta final)
+    if (mode === "edit" && productId) {
+      return productId
+    }
+    // Em modo criação, usar pasta temporária até salvar (será movido no server)
+    const slug = slugify(initialValues.name || "produto")
     const ts = Date.now()
-    return `${slug}-${ts}`
-  }, [form])
+    return `drafts/${slug}-${ts}`
+  }, [mode, productId, initialValues.name])
 
   const upload = useSupabaseUpload({
     bucketName: "products",
@@ -255,7 +304,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
     allowedMimeTypes: ["image/*"],
     maxFiles: 6,
     maxFileSize: 6 * 1024 * 1024,
-    upsert: false,
+    upsert: mode === "edit", // Permitir sobrescrever arquivos ao editar
   })
   
   // Log apenas quando o estado do upload mudar (não em cada render)
@@ -267,30 +316,33 @@ export function ProductForm({ mode, productId, initialData, className }: Product
         files: upload.files.length,
         loading: upload.loading,
         successes: upload.successes.length,
-        errors: upload.errors.length
+        errors: upload.errors.length,
+        uploadedPaths: upload.uploadedPaths?.length ?? 0
       }
     })
-  }, [upload.files.length, upload.loading, upload.successes.length, upload.errors.length, uploadBasePath])
+  }, [upload.files.length, upload.loading, upload.successes.length, upload.errors.length, upload.uploadedPaths?.length, uploadBasePath])
 
+  // Processar novos uploads: converter paths em URLs públicas e anexar
+  const lastProcessedCountRef = useRef(0)
   useEffect(() => {
-    // quando upload conclui, atualizar imagens com URLs públicas
-    const setPublicUrls = async () => {
-      if (!upload.isSuccess || upload.successes.length === 0) {
-        return
-      }
-      const urls = upload.successes.map((name) => {
-        const path = `${uploadBasePath}/${name}`
-        const { data } = supabase.storage.from("products").getPublicUrl(path)
-        return data.publicUrl
-      })
+    const processNewUploads = () => {
+      const total = upload.uploadedPaths?.length ?? 0
+      if (upload.loading) return
+      if (total <= lastProcessedCountRef.current) return
+      const newPaths = upload.uploadedPaths!.slice(lastProcessedCountRef.current)
+      const urls = newPaths.map((p) => supabase.storage.from("products").getPublicUrl(p).data.publicUrl)
       const newImages = Array.from(new Set([...images, ...urls]))
       setImages(newImages)
       setStoreImages(newImages)
       form.setValue("images", newImages)
+      setHasUnsavedChanges(true)
+
+      lastProcessedCountRef.current = total
+      toast.success(`${newPaths.length} imagem(ns) adicionada(s). Lembre-se de salvar as alterações.`)
     }
-    setPublicUrls()
+    processNewUploads()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [upload.isSuccess, upload.successes.length])
+  }, [upload.uploadedPaths?.length, upload.loading])
 
   // Auto slug quando nome muda (se usuário não editou slug manualmente)
   useEffect(() => {
@@ -304,8 +356,15 @@ export function ProductForm({ mode, productId, initialData, className }: Product
   }, [form, slugEdited])
 
   const onSubmit = async (values: ProductFormValues) => {
-    const payload = { ...values, category_id: Number(values.category_id), images }
     const isEdit = mode === "edit" && productId
+    // Em criação, enviar também os storage paths para o backend mover para a pasta final
+    const uploadedPaths = (upload.uploadedPaths || []).slice(0)
+    const payload = {
+      ...values,
+      category_id: Number(values.category_id),
+      images,
+      ...(isEdit ? {} : { uploaded_paths: uploadedPaths })
+    } as Record<string, unknown>
 
     try {
       const res = await fetch(isEdit ? `/api/produtos/${productId}` : "/api/produtos", {
@@ -319,13 +378,30 @@ export function ProductForm({ mode, productId, initialData, className }: Product
         throw new Error(err?.error ?? "Erro ao salvar produto")
       }
 
+      const json = await res.json().catch(() => ({}))
+      const createdOrUpdated: Product | undefined = json?.data
+
       toast.success(isEdit ? "Produto atualizado" : "Produto criado")
       
-      // Limpar dados persistidos após sucesso
+      // Limpar estados após sucesso
+      setHasUnsavedChanges(false)
       if (mode === 'create') {
         clearForm()
       }
-      
+
+      // Se criou produto, levar para a página de edição e sincronizar imagens retornadas
+      if (!isEdit && createdOrUpdated) {
+        if (createdOrUpdated.images && Array.isArray(createdOrUpdated.images)) {
+          setImages(createdOrUpdated.images)
+          setStoreImages(createdOrUpdated.images)
+          form.setValue("images", createdOrUpdated.images)
+        }
+        router.push(`/admin/produtos/${createdOrUpdated.id}`)
+        router.refresh()
+        return
+      }
+
+      // Caso edição, voltar para lista
       router.push("/admin/produtos")
       router.refresh()
     } catch (e: unknown) {
@@ -334,11 +410,54 @@ export function ProductForm({ mode, productId, initialData, className }: Product
     }
   }
 
-  const removeImage = (url: string) => {
-    const next = images.filter((u) => u !== url)
-    setImages(next)
-    setStoreImages(next)
-    form.setValue("images", next)
+  const removeImage = async (url: string) => {
+    // Confirmar antes de excluir
+    if (!confirm("Tem certeza que deseja remover esta imagem?")) {
+      return
+    }
+
+    setDeletingImage(url) // Mostrar indicador de carregamento
+
+    try {
+      // Extrair o path do arquivo da URL pública
+      // URL formato: https://[project].supabase.co/storage/v1/object/public/products/[path]/[filename]
+      const urlObj = new URL(url)
+      const pathParts = urlObj.pathname.split('/storage/v1/object/public/products/')
+      
+      if (pathParts.length > 1) {
+        const filePath = pathParts[1]
+        
+        // Deletar do Supabase Storage
+        const { error } = await supabase.storage
+          .from('products')
+          .remove([filePath])
+        
+        if (error) {
+          console.error('Erro ao deletar imagem do storage:', error)
+          toast.error('Erro ao remover imagem do servidor')
+          setDeletingImage(null)
+          return
+        }
+      } else {
+        toast.error('Não foi possível identificar o caminho da imagem')
+        setDeletingImage(null)
+        return
+      }
+      
+      // Remover da lista local
+      const next = images.filter((u) => u !== url)
+      setImages(next)
+      setStoreImages(next)
+      form.setValue("images", next)
+      setHasUnsavedChanges(true)
+      
+      toast.success('Imagem removida do servidor. Lembre-se de salvar as alterações.')
+    } catch (error) {
+      console.error('Erro ao processar remoção da imagem:', error)
+      toast.error('Erro ao remover imagem')
+    } finally {
+      setDeletingImage(null) // Remover indicador de carregamento
+    }
   }
 
   return (
@@ -347,8 +466,16 @@ export function ProductForm({ mode, productId, initialData, className }: Product
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
             {mode === "create" ? "Novo Produto" : "Editar Produto"}
+            {hasUnsavedChanges && (
+              <span className="text-orange-500 text-base ml-2">*</span>
+            )}
           </h1>
           <p className="text-sm text-muted-foreground">Preencha as informações do produto</p>
+          {hasUnsavedChanges && (
+            <p className="text-xs text-orange-600 mt-1">
+              ⚠️ Você tem alterações não salvas
+            </p>
+          )}
           {mode === 'create' && persistedFormData && Object.keys(persistedFormData).length > 1 && (
             <p className="text-xs text-blue-600 mt-1">
               📝 Rascunho salvo automaticamente - seus dados estão protegidos
@@ -469,11 +596,21 @@ export function ProductForm({ mode, productId, initialData, className }: Product
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categories.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.name}
-                          </SelectItem>
-                        ))}
+                        {categoriesLoading ? (
+                          <div className="p-2 text-sm text-muted-foreground text-center">
+                            Carregando categorias...
+                          </div>
+                        ) : localCategories.length === 0 ? (
+                          <div className="p-2 text-sm text-muted-foreground text-center">
+                            Nenhuma categoria disponível
+                          </div>
+                        ) : (
+                          localCategories.map((c) => (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.name}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -582,9 +719,10 @@ export function ProductForm({ mode, productId, initialData, className }: Product
                       <button
                         type="button"
                         onClick={() => removeImage(url)}
-                        className="absolute top-1 right-1 text-xs bg-destructive text-destructive-foreground px-2 py-0.5 rounded opacity-90 hover:opacity-100"
+                        disabled={deletingImage === url}
+                        className="absolute top-1 right-1 text-xs bg-destructive text-destructive-foreground px-2 py-0.5 rounded opacity-90 hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Remover
+                        {deletingImage === url ? "Removendo..." : "Remover"}
                       </button>
                     </div>
                   ))}
@@ -627,8 +765,13 @@ export function ProductForm({ mode, productId, initialData, className }: Product
               <Link href="/admin/produtos">
                 <Button type="button" variant="outline">Cancelar</Button>
               </Link>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
+              <Button 
+                type="submit" 
+                disabled={form.formState.isSubmitting}
+                variant={hasUnsavedChanges ? "default" : "outline"}
+                className={hasUnsavedChanges ? "bg-orange-600 hover:bg-orange-700" : ""}
+              >
+                {form.formState.isSubmitting ? "Salvando..." : hasUnsavedChanges ? "Salvar Alterações" : "Salvar"}
               </Button>
             </div>
           </form>

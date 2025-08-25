@@ -72,6 +72,7 @@ const DropzoneContent = ({ className }: { className?: string }) => {
     maxFileSize,
     maxFiles,
     isSuccess,
+    uploadedPaths,
   } = useDropzoneContext()
 
   const exceedMaxFiles = files.length > maxFiles
@@ -93,9 +94,32 @@ const DropzoneContent = ({ className }: { className?: string }) => {
       successesCount: successes.length,
       errorsCount: errors.length,
       maxFiles,
-      exceedMaxFiles
+      exceedMaxFiles,
+      uploadedPathsCount: uploadedPaths?.length ?? 0
     })
-  }, [files.length, loading, isSuccess, successes.length, errors.length, maxFiles, exceedMaxFiles])
+  }, [files.length, loading, isSuccess, successes.length, errors.length, maxFiles, exceedMaxFiles, uploadedPaths?.length])
+
+  // Auto-upload: ao adicionar arquivos válidos e não estiver carregando
+  useEffect(() => {
+    if (loading) return
+    if (files.length === 0) return
+    const hasEligible = files.some((f) => f.errors.length === 0 && !successes.includes(f.name))
+    if (hasEligible) {
+      console.log('⚡ [DROPZONE] Auto-upload acionado')
+      onUpload()
+    }
+  }, [files, loading, successes, onUpload])
+
+  // Limpar object URLs de previews ao desmontar
+  useEffect(() => {
+    return () => {
+      try {
+        files.forEach((f) => {
+          if (f.preview) URL.revokeObjectURL(f.preview)
+        })
+      } catch {}
+    }
+  }, [])
 
   if (isSuccess) {
     return (

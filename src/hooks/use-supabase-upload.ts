@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type FileError, type FileRejection, useDropzone } from 'react-dropzone'
+import { toast } from 'sonner'
 
 const supabase = createClient()
 
@@ -67,6 +68,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [errors, setErrors] = useState<{ name: string; message: string }[]>([])
   const [successes, setSuccesses] = useState<string[]>([])
+  const [uploadedPaths, setUploadedPaths] = useState<string[]>([])
 
   const isSuccess = useMemo(() => {
     if (errors.length === 0 && successes.length === 0) {
@@ -131,26 +133,37 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     
     if (!session) {
       console.error('🔴 [UPLOAD] Sem sessão ativa!')
+      toast.error('Sessão expirada. Faça login para enviar imagens.')
       setLoading(false)
       return
     }
 
-    // [Joshen] This is to support handling partial successes
-    // If any files didn't upload for any reason, hitting "Upload" again will only upload the files that had errors
-    const filesWithErrors = errors.map((x) => x.name)
-    const filesToUpload =
-      filesWithErrors.length > 0
-        ? [
-            ...files.filter((f) => filesWithErrors.includes(f.name)),
-            ...files.filter((f) => !successes.includes(f.name)),
-          ]
-        : files
+    // Considerar apenas arquivos elegíveis (sem erros locais)
+    const eligible = files.filter((f) => f.errors.length === 0)
+
+    // Re-upload apenas do que falhou, e upload do que ainda não subiu
+    const failedNames = new Set(errors.map((x) => x.name))
+    const successfulNames = new Set(successes)
+    const toUploadNames = new Set<string>([
+      ...Array.from(failedNames),
+      ...eligible.filter((f) => !successfulNames.has(f.name)).map((f) => f.name),
+    ])
+
+    const filesToUpload = eligible.filter((f) => toUploadNames.has(f.name))
 
     console.log('🔵 [UPLOAD] Files que serão enviados:', filesToUpload.map(f => f.name))
 
     const responses = await Promise.all(
       filesToUpload.map(async (file) => {
-        const uploadPath = !!path ? `${path}/${file.name}` : file.name
+        // Gerar nome único para evitar colisões (timestamp + rand + ext)
+        const ext = (() => {
+          const idx = file.name.lastIndexOf('.')
+          return idx !== -1 ? file.name.slice(idx + 1) : ''
+        })()
+        const uniqueBase = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+        const storedName = ext ? `${uniqueBase}.${ext}` : uniqueBase
+
+        const uploadPath = !!path ? `${path}/${storedName}` : storedName
         console.log(`🔵 [UPLOAD] Enviando arquivo: ${file.name}`)
         console.log(`🔵 [UPLOAD] Path completo: ${uploadPath}`)
         console.log(`🔵 [UPLOAD] Tamanho do arquivo: ${file.size} bytes`)
@@ -167,13 +180,19 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
           
           if (error) {
             console.error(`🔴 [UPLOAD] Erro no upload de ${file.name}:`, error)
+            toast.error(`Falha ao enviar ${file.name}`)
             return { name: file.name, message: error.message }
           } else {
             console.log(`✅ [UPLOAD] Sucesso no upload de ${file.name}`)
+            if (data?.path) {
+              setUploadedPaths((prev) => Array.from(new Set([...prev, data.path as string])))
+            }
+            toast.success(`Imagem enviada: ${file.name}`)
             return { name: file.name, message: undefined }
           }
         } catch (err) {
           console.error(`🔴 [UPLOAD] Erro inesperado no upload de ${file.name}:`, err)
+          toast.error(`Erro ao enviar ${file.name}`)
           return { name: file.name, message: err instanceof Error ? err.message : 'Erro desconhecido' }
         }
       })
@@ -228,6 +247,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     errors,
     setErrors,
     onUpload,
+    uploadedPaths,
     maxFileSize: maxFileSize,
     maxFiles: maxFiles,
     allowedMimeTypes,

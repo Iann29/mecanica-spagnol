@@ -22,6 +22,8 @@ const productInsertSchema = z.object({
   meta_title: z.string().max(60).optional(),
   meta_description: z.string().optional(),
   meta_keywords: z.string().optional(),
+  // Opcional: paths de objetos enviados na pasta temporária (ex.: drafts/...)
+  uploaded_paths: z.array(z.string()).optional(),
 });
 
 async function getAuthorizedClient() {
@@ -120,7 +122,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const payload: ProductInsert = parsed.data as ProductInsert;
+  const { uploaded_paths, ...rest } = parsed.data as Record<string, unknown> & { uploaded_paths?: string[] }
+  const payload: ProductInsert = rest as ProductInsert;
 
   const { data, error: insErr } = await supabase
     .from('products')
@@ -130,6 +133,40 @@ export async function POST(request: Request) {
 
   if (insErr) {
     return NextResponse.json({ error: insErr.message }, { status: 400 });
+  }
+
+  // Se recebemos uploads em pasta temporária, mover para a pasta final (products/{id}/...)
+  if (uploaded_paths && uploaded_paths.length > 0) {
+    const movedUrls: string[] = []
+    for (const fromPath of uploaded_paths) {
+      // manter o nome já único
+      const base = fromPath.split('/').pop() || ''
+      const toPath = `${data.id}/${base}`
+      const { error: moveErr } = await supabase.storage
+        .from('products')
+        .move(fromPath, toPath)
+      if (moveErr) {
+        // Continua tentando os demais
+        continue
+      }
+      const { data: pub } = supabase.storage
+        .from('products')
+        .getPublicUrl(toPath)
+      movedUrls.push(pub.publicUrl)
+    }
+
+    // Atualizar campo images com os arquivos movidos (se houve algum)
+    if (movedUrls.length > 0) {
+      const { data: updated, error: upErr } = await supabase
+        .from('products')
+        .update({ images: movedUrls })
+        .eq('id', data.id)
+        .select('*')
+        .single()
+      if (!upErr && updated) {
+        return NextResponse.json({ data: updated }, { status: 201 })
+      }
+    }
   }
 
   return NextResponse.json({ data }, { status: 201 });
