@@ -19,7 +19,7 @@ const productInsertSchema = z.object({
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
   meta_title: z.string().max(60).optional(),
-  meta_description: z.string().max(160).optional(),
+  meta_description: z.string().optional(),
   meta_keywords: z.string().optional(),
 });
 

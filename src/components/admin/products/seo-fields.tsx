@@ -76,13 +76,13 @@ export function SEOFields({ form, productName, className }: SEOFieldsProps) {
       <div className="space-y-4">
         {/* Meta Title */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-2">
             <Label htmlFor="meta_title">Título SEO</Label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <Badge variant="outline" className={titleStatus.color}>
                 {titleLength}/60
               </Badge>
-              <span className={cn("text-xs", titleStatus.color)}>
+              <span className={cn("text-xs whitespace-nowrap", titleStatus.color)}>
                 {titleStatus.text}
               </span>
             </div>
@@ -116,13 +116,13 @@ export function SEOFields({ form, productName, className }: SEOFieldsProps) {
 
         {/* Meta Description */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-2">
             <Label htmlFor="meta_description">Descrição SEO</Label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <Badge variant="outline" className={descriptionStatus.color}>
                 {descriptionLength}/160
               </Badge>
-              <span className={cn("text-xs", descriptionStatus.color)}>
+              <span className={cn("text-xs whitespace-nowrap", descriptionStatus.color)}>
                 {descriptionStatus.text}
               </span>
             </div>
@@ -157,10 +157,10 @@ export function SEOFields({ form, productName, className }: SEOFieldsProps) {
 
         {/* Meta Keywords */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-2">
             <Label htmlFor="meta_keywords">Palavras-chave</Label>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="outline" className="whitespace-nowrap">
                 {keywordCount} palavra{keywordCount !== 1 ? 's' : ''}
               </Badge>
             </div>
@@ -188,14 +188,14 @@ export function SEOFields({ form, productName, className }: SEOFieldsProps) {
             <Label className="font-medium">Preview no Google</Label>
           </div>
           
-          <div className="border rounded-lg p-4 bg-muted/30 space-y-1">
-            <div className="text-lg text-blue-600 hover:underline cursor-pointer font-medium">
+          <div className="border rounded-lg p-4 bg-muted/30 space-y-2">
+            <div className="text-lg text-blue-600 hover:underline cursor-pointer font-medium break-words">
               {metaTitle || currentName || "Título do produto"}
             </div>
-            <div className="text-sm text-green-700">
+            <div className="text-sm text-green-700 break-all">
               mecanicaspagnol.com.br/loja/{form.watch("slug") || "produto"}
             </div>
-            <div className="text-sm text-gray-600 line-clamp-2">
+            <div className="text-sm text-gray-600 line-clamp-3 break-words">
               {metaDescription || "Descrição do produto aparecerá aqui. Adicione uma descrição SEO para melhorar o posicionamento no Google."}
             </div>
           </div>

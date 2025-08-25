@@ -222,19 +222,14 @@ export function ProductForm({ mode, productId, initialData, className }: Product
           </h1>
           <p className="text-sm text-muted-foreground">Preencha as informações do produto</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/admin/produtos">
-            <Button variant="outline">Cancelar</Button>
-          </Link>
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
-          </Button>
-        </div>
+        <Link href="/admin/produtos">
+          <Button variant="outline">Cancelar</Button>
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 lg:grid-cols-1 gap-6">
         <Form {...form}>
-          <form className="lg:col-span-2 space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="xl:col-span-7 lg:col-span-1 space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
             <Card className="p-6 space-y-4">
             <FormField
               control={form.control}
@@ -472,11 +467,21 @@ export function ProductForm({ mode, productId, initialData, className }: Product
               productId={mode === "edit" ? productId : undefined}
               currentProductName={form.watch("name")}
             />
+
+            {/* Botões de Ação */}
+            <div className="flex justify-end gap-2 pt-6 border-t">
+              <Link href="/admin/produtos">
+                <Button type="button" variant="outline">Cancelar</Button>
+              </Link>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
           </form>
         </Form>
 
         {/* Sidebar com configurações e SEO */}
-        <div className="space-y-6">
+        <div className="xl:col-span-5 lg:col-span-1 space-y-6">
           <Card className="p-6 space-y-4">
             <h3 className="font-semibold">Configurações</h3>
             <Form {...form}>
