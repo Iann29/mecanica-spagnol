@@ -26,6 +26,21 @@
 | public     | profiles        | profiles_cpf_key                  | CREATE UNIQUE INDEX profiles_cpf_key ON public.profiles USING btree (cpf)                                    |
 | public     | profiles        | profiles_email_key                | CREATE UNIQUE INDEX profiles_email_key ON public.profiles USING btree (email)                                |
 | public     | profiles        | profiles_pkey                     | CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)                                        |
+| public     | products        | idx_products_meta_keywords        | CREATE INDEX idx_products_meta_keywords ON public.products USING gin (to_tsvector('portuguese', meta_keywords)) |
+| public     | products        | idx_products_meta_title           | CREATE INDEX idx_products_meta_title ON public.products USING gin (to_tsvector('portuguese', meta_title))    |
+| public     | products        | idx_products_reference            | CREATE INDEX idx_products_reference ON public.products USING btree (reference)                               |
+| public     | price_history   | price_history_pkey                | CREATE UNIQUE INDEX price_history_pkey ON public.price_history USING btree (id)                             |
+| public     | price_history   | idx_price_history_product_id      | CREATE INDEX idx_price_history_product_id ON public.price_history USING btree (product_id)                  |
+| public     | price_history   | idx_price_history_changed_at      | CREATE INDEX idx_price_history_changed_at ON public.price_history USING btree (changed_at DESC)             |
+| public     | product_variants| product_variants_pkey             | CREATE UNIQUE INDEX product_variants_pkey ON public.product_variants USING btree (id)                       |
+| public     | product_variants| idx_product_variants_product_id   | CREATE INDEX idx_product_variants_product_id ON public.product_variants USING btree (product_id)            |
+| public     | product_variants| idx_product_variants_active       | CREATE INDEX idx_product_variants_active ON public.product_variants USING btree (is_active)                 |
+| public     | product_variants| idx_product_variants_sort         | CREATE INDEX idx_product_variants_sort ON public.product_variants USING btree (product_id, sort_order)       |
+| public     | related_products| related_products_pkey             | CREATE UNIQUE INDEX related_products_pkey ON public.related_products USING btree (id)                       |
+| public     | related_products| idx_related_products_product_id   | CREATE INDEX idx_related_products_product_id ON public.related_products USING btree (product_id)            |
+| public     | related_products| idx_related_products_related_product_id | CREATE INDEX idx_related_products_related_product_id ON public.related_products USING btree (related_product_id) |
+| public     | related_products| idx_related_products_type         | CREATE INDEX idx_related_products_type ON public.related_products USING btree (relation_type)               |
+| public     | related_products| idx_related_products_sort         | CREATE INDEX idx_related_products_sort ON public.related_products USING btree (product_id, sort_order)      |
 </estrutura-em-markdown>
 
 <estrutura-em-json>
@@ -167,6 +182,96 @@
     "tablename": "profiles",
     "indexname": "profiles_pkey",
     "indexdef": "CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "indexname": "idx_products_meta_keywords",
+    "indexdef": "CREATE INDEX idx_products_meta_keywords ON public.products USING gin (to_tsvector('portuguese', meta_keywords))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "indexname": "idx_products_meta_title",
+    "indexdef": "CREATE INDEX idx_products_meta_title ON public.products USING gin (to_tsvector('portuguese', meta_title))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "products",
+    "indexname": "idx_products_reference",
+    "indexdef": "CREATE INDEX idx_products_reference ON public.products USING btree (reference)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "price_history",
+    "indexname": "price_history_pkey",
+    "indexdef": "CREATE UNIQUE INDEX price_history_pkey ON public.price_history USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "price_history",
+    "indexname": "idx_price_history_product_id",
+    "indexdef": "CREATE INDEX idx_price_history_product_id ON public.price_history USING btree (product_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "price_history",
+    "indexname": "idx_price_history_changed_at",
+    "indexdef": "CREATE INDEX idx_price_history_changed_at ON public.price_history USING btree (changed_at DESC)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_variants",
+    "indexname": "product_variants_pkey",
+    "indexdef": "CREATE UNIQUE INDEX product_variants_pkey ON public.product_variants USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_variants",
+    "indexname": "idx_product_variants_product_id",
+    "indexdef": "CREATE INDEX idx_product_variants_product_id ON public.product_variants USING btree (product_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_variants",
+    "indexname": "idx_product_variants_active",
+    "indexdef": "CREATE INDEX idx_product_variants_active ON public.product_variants USING btree (is_active)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_variants",
+    "indexname": "idx_product_variants_sort",
+    "indexdef": "CREATE INDEX idx_product_variants_sort ON public.product_variants USING btree (product_id, sort_order)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "related_products",
+    "indexname": "related_products_pkey",
+    "indexdef": "CREATE UNIQUE INDEX related_products_pkey ON public.related_products USING btree (id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "related_products",
+    "indexname": "idx_related_products_product_id",
+    "indexdef": "CREATE INDEX idx_related_products_product_id ON public.related_products USING btree (product_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "related_products",
+    "indexname": "idx_related_products_related_product_id",
+    "indexdef": "CREATE INDEX idx_related_products_related_product_id ON public.related_products USING btree (related_product_id)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "related_products",
+    "indexname": "idx_related_products_type",
+    "indexdef": "CREATE INDEX idx_related_products_type ON public.related_products USING btree (relation_type)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "related_products",
+    "indexname": "idx_related_products_sort",
+    "indexdef": "CREATE INDEX idx_related_products_sort ON public.related_products USING btree (product_id, sort_order)"
   }
 ]
 </estrutura-em-json>

@@ -53,6 +53,7 @@ export const productSchema = z.object({
   specifications: z.record(z.string(), z.any()).default({}),
   is_featured: z.boolean().default(false),
   is_active: z.boolean().default(true),
+  reference: z.string().max(100, 'Referência deve ter no máximo 100 caracteres').optional(),
   meta_title: z.string().max(60, 'Título SEO deve ter no máximo 60 caracteres').optional(),
   meta_description: z.string().max(160, 'Descrição SEO deve ter no máximo 160 caracteres').optional(),
   meta_keywords: z.string().optional()

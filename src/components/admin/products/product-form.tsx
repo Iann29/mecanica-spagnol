@@ -85,6 +85,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
       specifications: (initialData?.specifications as Record<string, unknown>) ?? {},
       is_featured: initialData?.is_featured ?? false,
       is_active: initialData?.is_active ?? true,
+      reference: initialData?.reference ?? "",
       meta_title: initialData?.meta_title ?? "",
       meta_description: initialData?.meta_description ?? "",
       meta_keywords: initialData?.meta_keywords ?? "",
@@ -128,6 +129,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
           specifications: (prod.specifications as Record<string, unknown>) ?? {},
           is_featured: prod.is_featured,
           is_active: prod.is_active,
+          reference: prod.reference ?? "",
           meta_title: prod.meta_title ?? "",
           meta_description: prod.meta_description ?? "",
           meta_keywords: prod.meta_keywords ?? "",
@@ -248,7 +250,7 @@ export function ProductForm({ mode, productId, initialData, className }: Product
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="sku"
@@ -263,6 +265,23 @@ export function ProductForm({ mode, productId, initialData, className }: Product
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="reference"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Referência</FormLabel>
+                    <FormControl>
+                      <Input placeholder="70530043 RE" {...field} />
+                    </FormControl>
+                    <FormDescription>Código de referência comercial</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="slug"

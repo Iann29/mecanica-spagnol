@@ -19,6 +19,7 @@ import { Loader2, Plus, Trash2, Pencil, RefreshCw, CheckSquare, Square, Eye, Eye
 interface ProductItem {
   id: string
   sku: string
+  reference?: string
   name: string
   price: number
   stock_quantity: number
@@ -334,6 +335,7 @@ export function ProductsTable({ className }: { className?: string }) {
                   />
                 </TableHead>
                 <TableHead>SKU</TableHead>
+                <TableHead>Referência</TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead className="text-right">Preço</TableHead>
                 <TableHead className="text-right">Estoque</TableHead>
@@ -345,7 +347,7 @@ export function ProductsTable({ className }: { className?: string }) {
             <TableBody>
               {rows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                     Nenhum produto encontrado
                   </TableCell>
                 </TableRow>
@@ -360,6 +362,9 @@ export function ProductsTable({ className }: { className?: string }) {
                     />
                   </TableCell>
                   <TableCell className="font-mono text-xs">{p.sku}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    {p.reference || "-"}
+                  </TableCell>
                   <TableCell className="font-medium">{p.name}</TableCell>
                   <TableCell className="text-right">R$ {p.price.toFixed(2)}</TableCell>
                   <TableCell className="text-right">{p.stock_quantity}</TableCell>

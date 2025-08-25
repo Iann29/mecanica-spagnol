@@ -193,7 +193,7 @@ export function SEOFields({ form, productName, className }: SEOFieldsProps) {
               {metaTitle || currentName || "Título do produto"}
             </div>
             <div className="text-sm text-green-700">
-              mecanicaspagnol.com.br/produto/{form.watch("slug") || "produto"}
+              mecanicaspagnol.com.br/loja/{form.watch("slug") || "produto"}
             </div>
             <div className="text-sm text-gray-600 line-clamp-2">
               {metaDescription || "Descrição do produto aparecerá aqui. Adicione uma descrição SEO para melhorar o posicionamento no Google."}

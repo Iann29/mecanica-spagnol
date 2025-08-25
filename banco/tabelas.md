@@ -123,6 +123,10 @@ create table public.products (
   specifications jsonb null default '{}'::jsonb,
   is_featured boolean null default false,
   is_active boolean null default true,
+  reference varchar(100) null,
+  meta_title varchar(60) null,
+  meta_description text null,
+  meta_keywords text null,
   created_at timestamp with time zone null default now(),
   updated_at timestamp with time zone null default now(),
   constraint products_pkey primary key (id),
@@ -164,4 +168,55 @@ create table public.profiles (
 create trigger update_profiles_updated_at BEFORE
 update on profiles for EACH row
 execute FUNCTION update_updated_at ();
+
+create table public.price_history (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  product_id uuid not null,
+  old_price decimal(10,2) null,
+  new_price decimal(10,2) null,
+  old_sale_price decimal(10,2) null,
+  new_sale_price decimal(10,2) null,
+  changed_by uuid null,
+  changed_at timestamp with time zone null default now(),
+  constraint price_history_pkey primary key (id),
+  constraint price_history_product_id_fkey foreign key (product_id) references products (id) on delete cascade,
+  constraint price_history_changed_by_fkey foreign key (changed_by) references auth.users (id)
+) tablespace pg_default;
+
+create trigger track_product_price_changes after update on products for each row execute function track_price_changes();
+
+create table public.product_variants (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  product_id uuid not null,
+  name varchar(50) not null,
+  value varchar(100) not null,
+  price_modifier decimal(10,2) null default 0,
+  stock_quantity integer null default 0,
+  sku_suffix varchar(20) null,
+  is_active boolean null default true,
+  sort_order integer null default 0,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint product_variants_pkey primary key (id),
+  constraint product_variants_product_id_fkey foreign key (product_id) references products (id) on delete cascade,
+  constraint product_variants_unique_variant unique (product_id, name, value)
+) tablespace pg_default;
+
+create trigger update_product_variants_updated_at before update on product_variants for each row execute function update_variant_updated_at();
+
+create table public.related_products (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  product_id uuid not null,
+  related_product_id uuid not null,
+  relation_type varchar(50) null default 'related',
+  sort_order integer null default 0,
+  created_at timestamp with time zone null default now(),
+  created_by uuid null,
+  constraint related_products_pkey primary key (id),
+  constraint related_products_product_id_fkey foreign key (product_id) references products (id) on delete cascade,
+  constraint related_products_related_product_id_fkey foreign key (related_product_id) references products (id) on delete cascade,
+  constraint related_products_created_by_fkey foreign key (created_by) references auth.users (id),
+  constraint related_products_no_self_relation check (product_id != related_product_id),
+  constraint related_products_unique_relation unique (product_id, related_product_id)
+) tablespace pg_default;
 

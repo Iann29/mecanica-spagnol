@@ -66,6 +66,21 @@
 | profiles        | profiles_pkey                     | PRIMARY KEY     | id           | null                         |
 | profiles        | profiles_cpf_key                  | UNIQUE          | cpf          | null                         |
 | profiles        | profiles_email_key                | UNIQUE          | email        | null                         |
+| price_history   | price_history_pkey                | PRIMARY KEY     | id           | null                         |
+| price_history   | price_history_product_id_fkey     | FOREIGN KEY     | product_id   | null                         |
+| price_history   | price_history_changed_by_fkey     | FOREIGN KEY     | changed_by   | null                         |
+| product_variants| product_variants_pkey             | PRIMARY KEY     | id           | null                         |
+| product_variants| product_variants_product_id_fkey  | FOREIGN KEY     | product_id   | null                         |
+| product_variants| product_variants_unique_variant   | UNIQUE          | product_id   | null                         |
+| product_variants| product_variants_unique_variant   | UNIQUE          | name         | null                         |
+| product_variants| product_variants_unique_variant   | UNIQUE          | value        | null                         |
+| related_products| related_products_pkey             | PRIMARY KEY     | id           | null                         |
+| related_products| related_products_product_id_fkey  | FOREIGN KEY     | product_id   | null                         |
+| related_products| related_products_related_product_id_fkey | FOREIGN KEY | related_product_id | null                    |
+| related_products| related_products_created_by_fkey  | FOREIGN KEY     | created_by   | null                         |
+| related_products| related_products_no_self_relation | CHECK           | null         | (product_id != related_product_id) |
+| related_products| related_products_unique_relation  | UNIQUE          | product_id   | null                         |
+| related_products| related_products_unique_relation  | UNIQUE          | related_product_id | null                   |
 </estrutura-em-markdown>
 
 <estrutura-em-json>
@@ -509,6 +524,111 @@
     "constraint_name": "profiles_email_key",
     "constraint_type": "UNIQUE",
     "column_name": "email",
+    "check_clause": null
+  },
+  {
+    "table_name": "price_history",
+    "constraint_name": "price_history_pkey",
+    "constraint_type": "PRIMARY KEY",
+    "column_name": "id",
+    "check_clause": null
+  },
+  {
+    "table_name": "price_history",
+    "constraint_name": "price_history_product_id_fkey",
+    "constraint_type": "FOREIGN KEY",
+    "column_name": "product_id",
+    "check_clause": null
+  },
+  {
+    "table_name": "price_history",
+    "constraint_name": "price_history_changed_by_fkey",
+    "constraint_type": "FOREIGN KEY",
+    "column_name": "changed_by",
+    "check_clause": null
+  },
+  {
+    "table_name": "product_variants",
+    "constraint_name": "product_variants_pkey",
+    "constraint_type": "PRIMARY KEY",
+    "column_name": "id",
+    "check_clause": null
+  },
+  {
+    "table_name": "product_variants",
+    "constraint_name": "product_variants_product_id_fkey",
+    "constraint_type": "FOREIGN KEY",
+    "column_name": "product_id",
+    "check_clause": null
+  },
+  {
+    "table_name": "product_variants",
+    "constraint_name": "product_variants_unique_variant",
+    "constraint_type": "UNIQUE",
+    "column_name": "product_id",
+    "check_clause": null
+  },
+  {
+    "table_name": "product_variants",
+    "constraint_name": "product_variants_unique_variant",
+    "constraint_type": "UNIQUE",
+    "column_name": "name",
+    "check_clause": null
+  },
+  {
+    "table_name": "product_variants",
+    "constraint_name": "product_variants_unique_variant",
+    "constraint_type": "UNIQUE",
+    "column_name": "value",
+    "check_clause": null
+  },
+  {
+    "table_name": "related_products",
+    "constraint_name": "related_products_pkey",
+    "constraint_type": "PRIMARY KEY",
+    "column_name": "id",
+    "check_clause": null
+  },
+  {
+    "table_name": "related_products",
+    "constraint_name": "related_products_product_id_fkey",
+    "constraint_type": "FOREIGN KEY",
+    "column_name": "product_id",
+    "check_clause": null
+  },
+  {
+    "table_name": "related_products",
+    "constraint_name": "related_products_related_product_id_fkey",
+    "constraint_type": "FOREIGN KEY",
+    "column_name": "related_product_id",
+    "check_clause": null
+  },
+  {
+    "table_name": "related_products",
+    "constraint_name": "related_products_created_by_fkey",
+    "constraint_type": "FOREIGN KEY",
+    "column_name": "created_by",
+    "check_clause": null
+  },
+  {
+    "table_name": "related_products",
+    "constraint_name": "related_products_no_self_relation",
+    "constraint_type": "CHECK",
+    "column_name": null,
+    "check_clause": "(product_id != related_product_id)"
+  },
+  {
+    "table_name": "related_products",
+    "constraint_name": "related_products_unique_relation",
+    "constraint_type": "UNIQUE",
+    "column_name": "product_id",
+    "check_clause": null
+  },
+  {
+    "table_name": "related_products",
+    "constraint_name": "related_products_unique_relation",
+    "constraint_type": "UNIQUE",
+    "column_name": "related_product_id",
     "check_clause": null
   }
 ]

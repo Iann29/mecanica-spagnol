@@ -27,6 +27,11 @@
 | public     | profiles        | Admins podem ver todos os perfis               | PERMISSIVE | {public} | SELECT | is_admin_user()                                                                                                        | null                                                                                                               |
 | public     | profiles        | Usuários podem atualizar próprio perfil        | PERMISSIVE | {public} | UPDATE | (auth.uid() = id)                                                                                                      | null                                                                                                               |
 | public     | profiles        | Usuários podem ver próprio perfil              | PERMISSIVE | {public} | SELECT | (auth.uid() = id)                                                                                                      | null                                                                                                               |
+| public     | price_history   | Admins podem ver histórico de preços           | PERMISSIVE | {public} | SELECT | is_admin_user()                                                                                                        | null                                                                                                               |
+| public     | product_variants| Admins podem gerenciar variações                | PERMISSIVE | {public} | ALL    | is_admin_user()                                                                                                        | null                                                                                                               |
+| public     | product_variants| Variações de produtos ativos são públicas      | PERMISSIVE | {public} | SELECT | (is_active = true) AND (EXISTS ( SELECT 1 FROM products WHERE ((products.id = product_variants.product_id) AND (products.is_active = true)))) | null                                                                                         |
+| public     | related_products| Admins podem gerenciar produtos relacionados   | PERMISSIVE | {public} | ALL    | is_admin_user()                                                                                                        | null                                                                                                               |
+| public     | related_products| Relacionamentos de produtos ativos são públicos| PERMISSIVE | {public} | SELECT | (EXISTS ( SELECT 1 FROM products p1 WHERE ((p1.id = related_products.product_id) AND (p1.is_active = true)))) AND (EXISTS ( SELECT 1 FROM products p2 WHERE ((p2.id = related_products.related_product_id) AND (p2.is_active = true)))) | null |
 </estrutura-em-markdown>
 
 <estrutura-em-json>
@@ -209,6 +214,56 @@
     "roles": "{public}",
     "cmd": "SELECT",
     "qual": "(auth.uid() = id)",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "price_history",
+    "policyname": "Admins podem ver histórico de preços",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "is_admin_user()",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_variants",
+    "policyname": "Admins podem gerenciar variações",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "is_admin_user()",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "product_variants",
+    "policyname": "Variações de produtos ativos são públicas",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(is_active = true) AND (EXISTS ( SELECT 1 FROM products WHERE ((products.id = product_variants.product_id) AND (products.is_active = true))))",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "related_products",
+    "policyname": "Admins podem gerenciar produtos relacionados",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "is_admin_user()",
+    "with_check": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "related_products",
+    "policyname": "Relacionamentos de produtos ativos são públicos",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1 FROM products p1 WHERE ((p1.id = related_products.product_id) AND (p1.is_active = true)))) AND (EXISTS ( SELECT 1 FROM products p2 WHERE ((p2.id = related_products.related_product_id) AND (p2.is_active = true))))",
     "with_check": null
   }
 ]

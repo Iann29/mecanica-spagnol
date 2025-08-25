@@ -42,6 +42,7 @@ export interface Product {
   specifications: Record<string, unknown>;
   is_featured: boolean;
   is_active: boolean;
+  reference?: string;
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;
